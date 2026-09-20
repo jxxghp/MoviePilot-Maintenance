@@ -9,7 +9,7 @@
 ## P0 — Actions 与 Codex CLI 环境（active）
 
 - 创建控制仓 workflow、事件桥模板、提示词和 Codex 输出 Schema。
-- 通过 `gh auth setup-git`、`git config`、`GITHUB_EVENT_PATH`、`GITHUB_REPOSITORY` 等准备 Codex 的模拟维护者环境。
+- 通过 `gh auth setup-git`、`git config`、`GITHUB_EVENT_PATH`、`GITHUB_REPOSITORY` 等准备 Codex 的模拟维护者环境；使用完整非交互 permission profile，不等待人工授权。
 - Codex 自己 clone/fetch/checkout 目标仓，不使用普通 Actions checkout。
 - Codex 自己判断 Issue 是否成立、是否需要修改、是否符合项目方向、PR 是否适合合并以及是否需要回复；控制仓不实现这些业务逻辑。
 - 默认 shadow，只输出结果，不评论、不提交、不建 PR。
@@ -33,4 +33,4 @@ Codex 自己读取最终 CI、前端 Release、后端发布和 Issue 状态，�
 
 ## 外部平台安装清单
 
-维护者需要在 GitHub 配置：控制仓权限、目标仓事件桥、Actions Environments、`OPENAI_API_KEY`、控制仓读取 token、可选跨仓 `MAINTENANCE_TARGET_GH_TOKEN`、`CODEX_MODEL`/`CODEX_EFFORT`/`OPENAI_BASE_URL`、`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`、required reviewers、分支保护和默认 full-SHA control ref。代码不会伪造这些平台状态。
+维护者需要在 GitHub 配置：控制仓权限、目标仓事件桥、Actions Secrets/Variables、`OPENAI_API_KEY`、控制仓读取 token、可选跨仓 `MAINTENANCE_TARGET_GH_TOKEN`、`CODEX_MODEL`/`CODEX_EFFORT`/`OPENAI_BASE_URL`、`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`、分支保护和默认 full-SHA control ref。代码不会伪造这些平台状态。

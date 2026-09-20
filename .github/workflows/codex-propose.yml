@@ -15,11 +15,6 @@ on:
         description: Trusted analysis prompt basename without the .md suffix.
         required: true
         type: string
-      environment_name:
-        description: GitHub Environment that approves Issue/PR comments.
-        required: false
-        default: propose
-        type: string
       codex_model:
         description: Codex model name; an empty value uses the Action/CLI default.
         required: false
@@ -97,7 +92,6 @@ jobs:
     name: Run Codex with comment permission
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    environment: ${{ inputs.environment_name }}
     permissions:
       contents: read
       issues: write
@@ -186,12 +180,14 @@ jobs:
           effort: ${{ inputs.codex_effort }}
           allow-bots: true
           codex-home: .codex-home
-          permission-profile: moviepilot-analysis-net
+          permission-profile: moviepilot-autonomous-net
           safety-strategy: drop-sudo
           codex-args: '["--ephemeral"]'
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
+          CONTROL_GH_TOKEN: ''
+          TARGET_GH_TOKEN: ''
           CODEX_PUBLISH_COMMENTS: true
           CODEX_AUTOFIX_ENABLED: false
           CODEX_MODEL: ${{ inputs.codex_model }}

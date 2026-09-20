@@ -47,7 +47,6 @@ jobs:
       control_repository: jxxghp/MoviePilot-Maintenance
       control_ref: CONTROL_REF
       prompt_name: ${{ inputs.prompt_name }}
-      environment_name: shadow
       codex_model: ${{ vars.CODEX_MODEL }}
       codex_effort: ${{ vars.CODEX_EFFORT || 'medium' }}
       openai_base_url: ${{ vars.OPENAI_BASE_URL }}
@@ -72,7 +71,6 @@ jobs:
       control_repository: jxxghp/MoviePilot-Maintenance
       control_ref: CONTROL_REF
       prompt_name: ${{ inputs.prompt_name }}
-      environment_name: propose
       codex_model: ${{ vars.CODEX_MODEL }}
       codex_effort: ${{ vars.CODEX_EFFORT || 'medium' }}
       openai_base_url: ${{ vars.OPENAI_BASE_URL }}

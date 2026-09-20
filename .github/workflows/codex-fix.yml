@@ -16,11 +16,6 @@ on:
         required: false
         default: issue-fix
         type: string
-      environment_name:
-        description: Protected GitHub Environment for write access.
-        required: false
-        default: autofix
-        type: string
       codex_model:
         description: Codex model name; an empty value uses the Action/CLI default.
         required: false
@@ -80,7 +75,6 @@ jobs:
     name: Run approved Codex fix
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    environment: ${{ inputs.environment_name }}
     permissions:
       contents: write
       issues: write
@@ -167,12 +161,14 @@ jobs:
           effort: ${{ inputs.codex_effort }}
           allow-bots: true
           codex-home: .codex-home
-          permission-profile: moviepilot-workspace-net
+          permission-profile: moviepilot-autonomous-net
           safety-strategy: drop-sudo
           codex-args: '["--ephemeral"]'
         env:
           GH_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN || github.token }}
           GITHUB_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN || github.token }}
+          CONTROL_GH_TOKEN: ''
+          TARGET_GH_TOKEN: ''
           CODEX_PUBLISH_COMMENTS: ${{ inputs.publish_comments }}
           CODEX_AUTOFIX_ENABLED: ${{ inputs.autofix_enabled }}
           CODEX_MODEL: ${{ inputs.codex_model }}

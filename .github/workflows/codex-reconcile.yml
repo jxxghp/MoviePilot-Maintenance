@@ -31,7 +31,6 @@ jobs:
     name: Run Codex against configured target
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    environment: ${{ vars.CODEX_RECONCILE_ENVIRONMENT || 'shadow' }}
     permissions:
       contents: read
     env:
@@ -103,12 +102,13 @@ jobs:
           effort: ${{ vars.CODEX_EFFORT || 'medium' }}
           allow-bots: true
           codex-home: .codex-home
-          permission-profile: moviepilot-analysis-net
+          permission-profile: moviepilot-autonomous-net
           safety-strategy: drop-sudo
           codex-args: '["--ephemeral"]'
         env:
           GH_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN }}
+          TARGET_GH_TOKEN: ''
           TARGET_REPOSITORY: ${{ env.TARGET_REPOSITORY }}
           TARGET_NUMBER: ${{ env.TARGET_NUMBER }}
           CODEX_PUBLISH_COMMENTS: ${{ vars.CODEX_PUBLISH_COMMENTS == 'true' }}

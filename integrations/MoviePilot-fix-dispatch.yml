@@ -28,7 +28,6 @@ jobs:
       control_repository: jxxghp/MoviePilot-Maintenance
       control_ref: CONTROL_REF
       prompt_name: ${{ inputs.prompt_name }}
-      environment_name: autofix
       codex_model: ${{ vars.CODEX_MODEL }}
       codex_effort: ${{ vars.CODEX_EFFORT || 'high' }}
       openai_base_url: ${{ vars.OPENAI_BASE_URL }}
