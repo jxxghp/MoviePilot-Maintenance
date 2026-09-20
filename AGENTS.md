@@ -14,6 +14,6 @@
 
 - 新增类或方法必须有简短的类级或方法级 docstring；修改存量方法时补充缺失且有意义的说明。
 - 提示词、工作流和 Schema 的变更必须有安全场景回归检查。
-- 工作流中的 Action 在正式启用前必须固定到经过核验的完整 commit SHA；控制仓 ref 也必须固定到完整 SHA。
+- 工作流中的第三方 Action 在正式启用前必须固定到经过核验的完整 commit SHA；控制仓引用默认使用受保护的 `main`，以便目标仓自动读取最新提示词、Schema、配置和 Skill。只有需要临时冻结审计证据时，才显式改用完整 commit SHA。
 - 不在 Actions 普通步骤中 checkout 或执行目标 PR；代码库操作交给 Codex CLI，并由提示词明确禁止执行不可信 workflow/hooks/install 脚本。
 - `skills/` 只保存可注入的 Codex 指令；Telegram Skill 不包含 token、chat id 或自定义发送 SDK，Actions 负责把它注入 `.agents/skills`。
