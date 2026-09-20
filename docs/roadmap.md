@@ -6,7 +6,7 @@
 
 创建一个只包含 GitHub Actions、Codex CLI 配置、可信提示词、可注入 Skill 和运行权限的控制仓。收到 Issue、PR 或 CI 事件后，Actions 只传递上下文并启动 Codex；问题是否成立、是否需要改代码、是否符合 MoviePilot 方向、PR 是否适合合并、检出/修改/测试/提交/回复/通知全部由 Codex CLI 完成。
 
-## P0 — Actions 与 Codex CLI 环境（接线完成，端到端验收待上游模型服务恢复）
+## P0 — Actions 与 Codex CLI 环境（接线完成，endpoint 与模型路由已验证）
 
 - 创建控制仓 workflow、事件桥模板、提示词和 Codex 输出 Schema。
 - 通过 `gh auth setup-git`、`git config`、`GITHUB_EVENT_PATH`、`GITHUB_REPOSITORY` 等准备 Codex 的模拟维护者环境；使用完整非交互 permission profile，不等待人工授权。
@@ -15,13 +15,13 @@
 - 默认 shadow，只输出结果，不评论、不提交、不建 PR。
 - Issue/PR/CI intake 先用无 OpenAI Secret 的同仓 `workflow_dispatch` 转发，再由 `github-actions[bot]` 启动官方 Codex Action，避免普通外部参与者直接消耗 API key。
 
-当前证据：控制仓最新契约校验 run `35514094559` 成功；两个目标仓的人工 smoke/fix run 已实际进入 `codex exec`，且修复入口已将请求路由到配置的 Responses API endpoint，但 `MoviePilot` runs `35513870997`、`35513976513` 收到上游“高需求，可能产生临时错误”，因此尚未取得真实结构化结果 artifact。早先的默认 OpenAI `invalid_api_key` 已通过接入 `responses-api-endpoint` 修正。
+当前证据：控制仓契约校验已成功；两个目标仓的 workflow 已实际进入官方 `codex exec`，endpoint 预检从 GitHub-hosted runner 获得预期 HTTP 响应，配置的模型为 `gpt-5.6-luna`、推理强度为 `max`。真实任务的结构化结果、代码提交和 PR 仍须以每次运行的最终状态为准，不能用 endpoint 连通性代替业务验收。
 
-## P1 — Issue/PR/CI 分析与自动答复（实现完成，验收待 API 额度与历史回放）
+## P1 — Issue/PR/CI 分析与自动答复（实现完成，验收待历史回放与终态样本）
 
 Codex 读取 Issue/PR/diff/CI，自己判断问题、项目方向、PR 合并适配性和回复内容，并按固定提示词使用 `gh` 回复中文分析；Actions 仅检查 Codex 退出码和保存最终输出。外部 fork、Secrets 和 `pull_request_target` 仍受 GitHub 平台安全策略约束，但 Codex 运行过程不等待人工授权。
 
-历史样本 30 例回放、评论内容复核和提示词注入样例尚未完成，不能把分析接线的存在视为分析质量验收。
+API endpoint 和模型路由已恢复；历史样本 30 例回放、评论内容复核、提示词注入样例以及至少一个终态真实分析任务尚未完成，不能把分析接线的存在视为分析质量验收。
 
 ## P2 — Codex 自主修复和提交（实现完成，验收待 API 额度与低风险样本）
 

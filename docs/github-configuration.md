@@ -63,8 +63,8 @@
 | 名称 | 默认值 | 说明 |
 | --- | --- | --- |
 | `CODEX_ENABLED` | `false` | 总开关；确认 API key、模型和权限已配置后才改为 `true` |
-| `CODEX_MODEL` | 账号支持的 Codex GPT 模型名 | 传给官方 Codex Action；留空则使用 Action/CLI 默认模型 |
-| `CODEX_EFFORT` | `medium` | Codex 推理强度；修复入口模板默认使用 `high` |
+| `CODEX_MODEL` | 账号支持的 Codex GPT 模型名（当前推荐 `gpt-5.6-luna`） | 传给官方 Codex Action；必须与账户和中转服务实际支持的模型一致 |
+| `CODEX_EFFORT` | `max` | Codex 推理强度；当前维护配置使用 `max`，模板缺省也保持为 `max` |
 | `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理配置完整 Responses API 地址，例如 `https://codex-api.example.com/v1/responses`。推荐使用 Cloudflare Tunnel 或其它公网双栈 HTTPS 中转；不要把只在本机 DNS/IPv6 网络可达的地址直接给 GitHub-hosted runner |
 | `TELEGRAM_ENABLED` | `false` | 是否向 Codex 注入 Telegram 通知凭据 |
 | `TELEGRAM_CHAT_ID` | 空 | 固定维护者用户或群组 ID，不能由 Issue/PR/模型提供 |

@@ -122,7 +122,7 @@ jobs:
           output-file: codex-result.json
           output-schema-file: .codex-maintenance-result.schema.json
           model: ${{ vars.CODEX_MODEL }}
-          effort: ${{ vars.CODEX_EFFORT || 'medium' }}
+          effort: ${{ vars.CODEX_EFFORT || 'max' }}
           allow-bots: true
           codex-home: .codex-home
           permission-profile: ":danger-full-access"

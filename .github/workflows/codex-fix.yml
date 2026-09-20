@@ -24,7 +24,7 @@ on:
       codex_effort:
         description: Codex reasoning effort.
         required: false
-        default: high
+        default: max
         type: string
       openai_base_url:
         description: Optional OpenAI-compatible base URL.
