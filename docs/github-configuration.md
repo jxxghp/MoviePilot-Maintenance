@@ -66,6 +66,7 @@
 
 | 名称 | 默认值 | 说明 |
 | --- | --- | --- |
+| `CODEX_ENABLED` | `false` | 总开关；确认 API key、模型和权限已配置后才改为 `true` |
 | `CODEX_MODEL` | 账号支持的 Codex GPT 模型名 | 传给官方 Codex Action；留空则使用 Action/CLI 默认模型 |
 | `CODEX_EFFORT` | `medium` | Codex 推理强度；修复入口模板默认使用 `high` |
 | `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理才配置自定义地址 |
@@ -74,7 +75,7 @@
 | `CODEX_PUBLISH_COMMENTS` | `false` | `false` 只上传结果 artifact；`true` 才允许 Codex 用 `gh issue comment` 回复 |
 | `CODEX_AUTOFIX_ENABLED` | `false` | 只有 fix dispatch 使用；为 `true` 时 Codex 才能在有写权限的入口创建分支、提交和 PR |
 
-推荐的初始配置是：`CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`、`TELEGRAM_ENABLED=false`。这不会限制 Codex CLI 的本地执行权限，只限制它是否拥有对应的 GitHub 写入能力和是否主动发送通知。
+推荐的初始配置是：`CODEX_ENABLED=false`、`CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`、`TELEGRAM_ENABLED=false`。确认 `OPENAI_API_KEY` 和其它配置就绪后才把 `CODEX_ENABLED` 改为 `true`。这不会限制 Codex CLI 的本地执行权限，只控制是否启动任务以及是否拥有对应的 GitHub 写入能力和是否主动发送通知。
 
 ## 6. 控制仓补漏 workflow 的配置
 

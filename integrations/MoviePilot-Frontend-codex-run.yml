@@ -41,7 +41,7 @@ permissions:
 
 jobs:
   shadow:
-    if: ${{ vars.CODEX_PUBLISH_COMMENTS != 'true' }}
+    if: ${{ vars.CODEX_ENABLED == 'true' && vars.CODEX_PUBLISH_COMMENTS != 'true' }}
     uses: jxxghp/MoviePilot-Maintenance/.github/workflows/codex-event.yml@CONTROL_REF
     with:
       control_repository: jxxghp/MoviePilot-Maintenance
@@ -65,7 +65,7 @@ jobs:
       MAINTENANCE_CONTROL_READ_TOKEN: ${{ secrets.MAINTENANCE_CONTROL_READ_TOKEN }}
 
   propose:
-    if: ${{ vars.CODEX_PUBLISH_COMMENTS == 'true' }}
+    if: ${{ vars.CODEX_ENABLED == 'true' && vars.CODEX_PUBLISH_COMMENTS == 'true' }}
     uses: jxxghp/MoviePilot-Maintenance/.github/workflows/codex-propose.yml@CONTROL_REF
     with:
       control_repository: jxxghp/MoviePilot-Maintenance

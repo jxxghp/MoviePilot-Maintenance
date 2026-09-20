@@ -7,6 +7,7 @@ OPENAI_API_KEY                # secret，openai/codex-action 的专用输入
 MAINTENANCE_CONTROL_READ_TOKEN# optional secret，控制仓改为私有镜像时才需要；不传给 Codex
 CODEX_MODEL                   # variable，Codex GPT 模型
 CODEX_EFFORT                  # variable，Codex 推理强度
+CODEX_ENABLED                 # variable，默认 false；配置完 API key 后才改为 true
 OPENAI_BASE_URL               # variable，可选模型代理地址
 TELEGRAM_BOT_TOKEN            # secret，Codex 可选通知
 TELEGRAM_CHAT_ID              # variable/secret，固定通知用户

@@ -1,5 +1,6 @@
 # Non-sensitive execution-mode reference. These are not GitHub Environment resources.
 defaults:
+  enabled: false
   mode: shadow
   publish_comments: false
   autofix_enabled: false
