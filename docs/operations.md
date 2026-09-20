@@ -40,7 +40,7 @@ gh api rate_limit
 - `propose`：只有 `CODEX_PUBLISH_COMMENTS=true` 时才调用 `codex-propose.yml`；在 required reviewer 批准后给 Codex `issues: write`，允许自己回复分析；不允许 `contents: write`。
 - `autofix`：required reviewer 批准后给 Codex `contents: write`、`pull-requests: write`、`issues: write`，只允许主题分支/PR，不允许直接推 `v3` 或 merge。
 
-通过 `concurrency` 按仓库/Issue/PR 串行化重复触发。它不是业务判断器；最新 head/base/Issue 内容由 Codex 每次重新读取。`codex-event.yml`、`codex-propose.yml` 和 `codex-fix.yml` 都不包含 Issue/PR 业务逻辑，区别只在平台权限、sandbox 和提示词入口。
+通过 `concurrency` 按仓库/Issue/PR 串行化重复触发。它不是业务判断器；最新 head/base/Issue 内容由 Codex 每次重新读取。`codex-event.yml`、`codex-propose.yml` 和 `codex-fix.yml` 都不包含 Issue/PR 业务逻辑，区别只在平台权限、permission profile 和提示词入口。
 
 ## 事件与安全
 
@@ -55,7 +55,7 @@ gh api rate_limit
 ## 安装顺序
 
 1. 创建私有控制仓，提交本项目并记录提交 full SHA；不要用 floating branch/tag 作为 workflow 或 prompt 来源。
-2. 在两个目标仓复制对应的事件桥模板，替换 `CONTROL_REF`；按实际 CI 工作流复制 CI bridge。
+2. 在两个目标仓复制对应的无密钥事件 intake 和 `*-codex-run.yml` trusted run 模板，替换其中的 `CONTROL_REF`；按实际 CI 工作流复制 CI bridge，按需复制 fix dispatch。
 3. 为目标仓创建 `shadow`、`propose`、`autofix` Environment；在 `propose`/`autofix` 配置 required reviewers 和最小权限。
 4. 在 Environment 中配置 `OPENAI_API_KEY`、模型变量、可选代理地址、控制仓读取 token 和固定 Telegram 收件人；默认保持 `CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`。
 5. 先手工触发 Issue/PR 事件验证 artifact，再逐步打开评论和修复入口。整个过程不需要本地服务或本地数据库。
