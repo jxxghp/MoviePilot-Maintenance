@@ -69,7 +69,7 @@
 | `CODEX_ENABLED` | `false` | 总开关；确认 API key、模型和权限已配置后才改为 `true` |
 | `CODEX_MODEL` | 账号支持的 Codex GPT 模型名 | 传给官方 Codex Action；留空则使用 Action/CLI 默认模型 |
 | `CODEX_EFFORT` | `medium` | Codex 推理强度；修复入口模板默认使用 `high` |
-| `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理才配置自定义地址 |
+| `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理配置完整 Responses API 地址，例如 `https://mac.jxxghp.cn:8443/v1/responses` |
 | `TELEGRAM_ENABLED` | `false` | 是否向 Codex 注入 Telegram 通知凭据 |
 | `TELEGRAM_CHAT_ID` | 空 | 固定维护者用户或群组 ID，不能由 Issue/PR/模型提供 |
 | `CODEX_PUBLISH_COMMENTS` | `false` | `false` 只上传结果 artifact；`true` 才允许 Codex 用 `gh issue comment` 回复 |

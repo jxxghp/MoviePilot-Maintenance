@@ -173,6 +173,7 @@ jobs:
         uses: openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          responses-api-endpoint: ${{ inputs.openai_base_url }}
           prompt-file: .codex-maintenance-prompt.md
           output-file: codex-result.json
           output-schema-file: .codex-maintenance-result.schema.json

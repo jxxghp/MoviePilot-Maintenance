@@ -65,8 +65,14 @@ jobs:
           set -euo pipefail
           ruby -e 'require "yaml"; Dir[".github/workflows/*.yml", "integrations/*.yml"].each { |f| YAML.load_file(f) }'
           for workflow in .github/workflows/codex-event.yml .github/workflows/codex-propose.yml .github/workflows/codex-fix.yml .github/workflows/codex-reconcile.yml; do
+            grep -q 'responses-api-endpoint:' "$workflow"
             grep -q 'permission-profile: ":danger-full-access"' "$workflow"
             grep -q 'safety-strategy: drop-sudo' "$workflow"
+          done
+          grep -q "if: \${{ inputs.autofix_enabled == true }}" .github/workflows/codex-fix.yml
+          grep -q "CODEX_AUTOFIX_ENABLED == 'true'" integrations/MoviePilot-fix-dispatch.yml
+          for integration in integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml integrations/MoviePilot-fix-dispatch.yml; do
+            grep -q "TELEGRAM_CHAT_ID != ''" "$integration"
           done
           for prompt in issue-triage pr-review issue-fix ci-fix delivery; do
             test -s "prompts/${prompt}.md"

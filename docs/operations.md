@@ -30,7 +30,7 @@ gh api rate_limit
 | `CODEX_ENABLED` | Repository/organization Variable | 默认 `false`；Secrets/Variables 完整配置并准备启用后才改为 `true` |
 | `CODEX_MODEL` | Repository/organization Variable | Codex GPT 模型名 |
 | `CODEX_EFFORT` | Repository/organization Variable | 推理强度 |
-| `OPENAI_BASE_URL` | Repository/organization Variable | 可选 API 代理地址 |
+| `OPENAI_BASE_URL` | Repository/organization Variable | 可选完整 Responses API 地址；例如 `https://mac.jxxghp.cn:8443/v1/responses` |
 | `TELEGRAM_BOT_TOKEN` | Repository/organization Secret | Codex 按提示词通知固定 chat |
 | `TELEGRAM_CHAT_ID` | Repository/organization Variable/Secret | 固定收件人 |
 | `TELEGRAM_ENABLED` | Repository/organization Variable | 默认 `false`；只控制是否向 Codex 注入通知凭据 |

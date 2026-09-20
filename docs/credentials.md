@@ -8,7 +8,7 @@ MAINTENANCE_CONTROL_READ_TOKEN# optional secret，控制仓改为私有镜像时
 CODEX_MODEL                   # variable，Codex GPT 模型
 CODEX_EFFORT                  # variable，Codex 推理强度
 CODEX_ENABLED                 # variable，默认 false；配置完 API key 后才改为 true
-OPENAI_BASE_URL               # variable，可选模型代理地址
+OPENAI_BASE_URL               # variable，可选完整 Responses API 地址，例如 https://mac.jxxghp.cn:8443/v1/responses
 TELEGRAM_BOT_TOKEN            # secret，Codex 可选通知
 TELEGRAM_CHAT_ID              # variable/secret，固定通知用户
 TELEGRAM_ENABLED              # variable，默认 false；只控制是否把固定通知凭据注入 Codex
