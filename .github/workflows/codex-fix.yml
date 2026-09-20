@@ -41,6 +41,21 @@ on:
         required: false
         default: true
         type: boolean
+      target_number:
+        description: Original Issue or PR number when available.
+        required: false
+        default: ""
+        type: string
+      target_ref:
+        description: Target branch or ref selected by the caller.
+        required: false
+        default: ""
+        type: string
+      target_sha:
+        description: Target commit SHA selected by the caller.
+        required: false
+        default: ""
+        type: string
       telegram_enabled:
         description: Whether the fixed Telegram integration variables are available to Codex.
         required: false
@@ -67,8 +82,9 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: moviepilot-codex-fix-${{ github.repository }}-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: false
+  # A newer dispatch for the same Issue/PR/SHA supersedes an older fix attempt.
+  group: moviepilot-codex-fix-${{ github.repository }}-${{ inputs.target_number || inputs.target_sha || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   codex:
@@ -196,7 +212,9 @@ jobs:
           CODEX_AUTOFIX_ENABLED: ${{ inputs.autofix_enabled }}
           CODEX_MODEL: ${{ inputs.codex_model }}
           CODEX_EFFORT: ${{ inputs.codex_effort }}
-          TARGET_NUMBER: ${{ env.TARGET_NUMBER }}
+          TARGET_NUMBER: ${{ inputs.target_number }}
+          TARGET_REF: ${{ inputs.target_ref }}
+          TARGET_SHA: ${{ inputs.target_sha }}
           OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
           TELEGRAM_ENABLED: ${{ inputs.telegram_enabled }}
           TELEGRAM_CHAT_ID: ${{ inputs.telegram_enabled && inputs.telegram_chat_id || '' }}

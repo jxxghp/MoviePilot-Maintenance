@@ -94,8 +94,11 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: moviepilot-codex-${{ github.repository }}-${{ inputs.target_kind }}-${{ inputs.target_number || inputs.target_run_id || github.run_id }}
-  cancel-in-progress: false
+  # Coalesce repeated Issue/PR edits and CI failures for the same target. The
+  # latest event carries the newest ref/SHA; Codex rereads the live GitHub
+  # state when it starts.
+  group: moviepilot-codex-${{ github.repository }}-${{ inputs.target_kind }}-${{ inputs.target_number || inputs.target_sha || inputs.target_run_id || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   codex:

@@ -74,6 +74,12 @@ jobs:
           done
           grep -q "autofix_enabled == true" .github/workflows/codex-fix.yml
           grep -q "CODEX_AUTOFIX_ENABLED == 'true'" integrations/MoviePilot-fix-dispatch.yml
+          for workflow in .github/workflows/codex-event.yml .github/workflows/codex-propose.yml .github/workflows/codex-fix.yml; do
+            grep -q 'cancel-in-progress: true' "$workflow"
+            grep -q 'inputs.target_sha' "$workflow"
+          done
+          grep -q 'target_number:.*inputs.issue_number' integrations/MoviePilot-fix-dispatch.yml
+          grep -q 'TARGET_NUMBER:.*inputs.target_number' .github/workflows/codex-fix.yml
           for integration in integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml integrations/MoviePilot-fix-dispatch.yml; do
             grep -q "TELEGRAM_CHAT_ID != ''" "$integration"
           done

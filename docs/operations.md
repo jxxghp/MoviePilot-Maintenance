@@ -47,7 +47,7 @@ gh api rate_limit
 - `propose`：只有 `CODEX_PUBLISH_COMMENTS=true` 时才调用 `codex-propose.yml`；给 Codex `issues: write`，允许自己回复分析；不允许 `contents: write`。
 - `autofix`：启用 fix dispatch 和 `CODEX_AUTOFIX_ENABLED=true` 后给 Codex `contents: write`、`pull-requests: write`、`issues: write`，只允许主题分支/PR，不允许直接推 `v3` 或 merge。
 
-通过 `concurrency` 按仓库/Issue/PR 串行化重复触发。它不是业务判断器；最新 head/base/Issue 内容由 Codex 每次重新读取。`codex-event.yml`、`codex-propose.yml` 和 `codex-fix.yml` 都不包含 Issue/PR 业务逻辑，区别只在平台权限、permission profile 和提示词入口。
+通过 GitHub Actions `concurrency` 按仓库和目标 Issue/PR/SHA 合并重复触发；新事件会取消同一目标的旧运行，避免同一个 CI 提交并行消耗模型额度或重复写入。它不是业务判断器；最新 head/base/Issue 内容由 Codex 每次重新读取。`codex-event.yml`、`codex-propose.yml` 和 `codex-fix.yml` 都不包含 Issue/PR 业务逻辑，区别只在平台权限、permission profile 和提示词入口。手工 fix 还会把 Issue/PR 编号、ref 和 SHA 显式传入 reusable workflow，Codex 不需要猜测目标。
 
 ## 事件与安全
 

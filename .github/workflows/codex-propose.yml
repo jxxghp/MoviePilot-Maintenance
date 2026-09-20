@@ -84,8 +84,9 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: moviepilot-codex-propose-${{ github.repository }}-${{ inputs.target_kind }}-${{ inputs.target_number || inputs.target_run_id || github.run_id }}
-  cancel-in-progress: false
+  # Keep only the newest analysis for one Issue/PR/target SHA.
+  group: moviepilot-codex-propose-${{ github.repository }}-${{ inputs.target_kind }}-${{ inputs.target_number || inputs.target_sha || inputs.target_run_id || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   codex:

@@ -35,7 +35,7 @@ CI 失败的自动入口是目标仓的 `.github/workflows/moviepilot-codex-ci.y
 | `moviepilot-codex-ci.yml` | 自动：配置的 CI workflow `completed` 且结论为 `failure` | 把失败 run ID、head SHA 和分支转发给 `moviepilot-codex-run.yml` | 否 | 无代码写权限 |
 | `moviepilot-codex-fix.yml` | 仅 `workflow_dispatch` 手工触发 | 经过两个变量门禁后调用有写权限的修复 reusable workflow | 间接 | 允许主题分支、commit、push、PR 和 Issue 回复；不直接推 `v3`，不自动 merge |
 
-事件 bridge 和 CI bridge 不读取 `OPENAI_API_KEY`、`TELEGRAM_BOT_TOKEN`，也不 checkout 目标代码。它们只使用目标仓自动提供的 `GITHUB_TOKEN` 调用同仓 `gh workflow run`。
+事件 bridge 和 CI bridge 不读取 `OPENAI_API_KEY`、`TELEGRAM_BOT_TOKEN`，也不 checkout 目标代码。它们只使用目标仓自动提供的 `GITHUB_TOKEN` 调用同仓 `gh workflow run`。CI 任务把失败 run 的 head SHA 作为并发去重键；同一 SHA 的重复失败只保留最新的 Codex 运行。
 
 ## 控制仓中的四个 reusable workflow
 
@@ -45,7 +45,7 @@ CI 失败的自动入口是目标仓的 `.github/workflows/moviepilot-codex-ci.y
 | --- | --- | --- | --- |
 | `.github/workflows/codex-event.yml` | `moviepilot-codex-run.yml` 的 `shadow` job | `contents/issues/pull-requests: read` | 读取上下文，调用官方 Codex CLI，保存结构化分析结果 artifact |
 | `.github/workflows/codex-propose.yml` | `moviepilot-codex-run.yml` 的 `propose` job | `contents: read`、`issues: write`、`pull-requests: read` | 让 Codex 自己判断并通过 `gh` 回复 Issue/PR；不改代码 |
-| `.github/workflows/codex-fix.yml` | 目标仓 `moviepilot-codex-fix.yml` | `contents/issues/pull-requests: write` | 让 Codex 自己检出、修改、测试、commit、push、建 PR 和回写结果 |
+| `.github/workflows/codex-fix.yml` | 目标仓 `moviepilot-codex-fix.yml` | `contents/issues/pull-requests: write` | 让 Codex 自己检出、修改、测试、commit、push、建 PR 和回写结果；接收显式 Issue/PR 编号、ref、SHA，并按目标合并重复运行 |
 | `.github/workflows/codex-reconcile.yml` | 控制仓定时任务或手工 dispatch；默认关闭 | 由控制仓配置的跨仓 token 决定 | 可选的定时交付/补漏任务，不属于 Issue/PR 自动入口 |
 
 控制仓的 `.github/workflows/contract-validation.yml` 只校验 prompt、Schema、权限和 workflow 引用；它不是 MoviePilot Issue/PR 维护入口。
