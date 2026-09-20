@@ -11,7 +11,16 @@
     "summary",
     "changed",
     "tests",
-    "needs_human"
+    "needs_human",
+    "classification",
+    "direction_assessment",
+    "branch",
+    "commit",
+    "pr",
+    "evidence",
+    "unverified",
+    "human_action",
+    "notification"
   ],
   "properties": {
     "status": {
@@ -128,7 +137,8 @@
       "additionalProperties": false,
       "required": [
         "enabled",
-        "sent"
+        "sent",
+        "error"
       ],
       "properties": {
         "enabled": {
