@@ -1,0 +1,68 @@
+name: Validate MoviePilot maintenance contract
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout control repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Validate TOML and JSON contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import tomllib
+
+          root = pathlib.Path('.')
+          config = tomllib.loads((root / 'config/codex.toml').read_text())
+          assert config['default_permissions'] == ':danger-full-access'
+          assert config['approval_policy'] == 'never'
+
+          schema = json.loads((root / 'schemas/codex-result.schema.json').read_text())
+          assert schema['additionalProperties'] is False
+          assert set(schema['required']) >= {
+              'status', 'repository', 'ref', 'summary', 'changed', 'tests', 'needs_human'
+          }
+          print('TOML and JSON contracts: OK')
+          PY
+
+      - name: Validate YAML and trusted runtime invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e 'require "yaml"; Dir[".github/workflows/*.yml", "integrations/*.yml"].each { |f| YAML.load_file(f) }'
+          for workflow in .github/workflows/codex-event.yml .github/workflows/codex-propose.yml .github/workflows/codex-fix.yml .github/workflows/codex-reconcile.yml; do
+            grep -q 'permission-profile: ":danger-full-access"' "$workflow"
+            grep -q 'safety-strategy: drop-sudo' "$workflow"
+          done
+          grep -q 'openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af' .github/workflows/*.yml
+          if rg -n 'actions/checkout' .github/workflows/codex-*.yml integrations/*.yml; then
+            echo 'Target maintenance workflows must not checkout target code' >&2
+            exit 1
+          fi
+          grep -q 'TELEGRAM_CHAT_ID' skills/moviepilot-telegram/SKILL.md
+          echo 'YAML and runtime invariants: OK'
+
+      - name: Check whitespace and stale custom profile references
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          if rg -n 'moviepilot-autonomous-net|extends = ":danger-full-access"' .; then
+            echo 'Stale custom Codex permission profile found' >&2
+            exit 1
+          fi
+          echo 'Whitespace and profile checks: OK'
