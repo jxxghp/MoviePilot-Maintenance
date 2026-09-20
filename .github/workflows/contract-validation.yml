@@ -65,7 +65,9 @@ jobs:
           set -euo pipefail
           ruby -e 'require "yaml"; Dir[".github/workflows/*.yml", "integrations/*.yml"].each { |f| YAML.load_file(f) }'
           for workflow in .github/workflows/codex-event.yml .github/workflows/codex-propose.yml .github/workflows/codex-fix.yml .github/workflows/codex-reconcile.yml; do
+            grep -q 'openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af' "$workflow"
             grep -q 'responses-api-endpoint:' "$workflow"
+            grep -q 'curl --ipv6' "$workflow"
             grep -q 'permission-profile: ":danger-full-access"' "$workflow"
             grep -q 'safety-strategy: drop-sudo' "$workflow"
           done
@@ -77,7 +79,9 @@ jobs:
           for prompt in issue-triage pr-review issue-fix ci-fix delivery; do
             test -s "prompts/${prompt}.md"
           done
-          grep -q 'openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af' .github/workflows/*.yml
+          for integration in integrations/MoviePilot-event-bridge.yml integrations/MoviePilot-Frontend-event-bridge.yml integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml integrations/MoviePilot-ci-bridge.yml integrations/MoviePilot-Frontend-ci-bridge.yml integrations/MoviePilot-fix-dispatch.yml; do
+            test -s "$integration"
+          done
           if rg -n 'actions/checkout' .github/workflows/codex-*.yml integrations/*.yml; then
             echo 'Target maintenance workflows must not checkout target code' >&2
             exit 1

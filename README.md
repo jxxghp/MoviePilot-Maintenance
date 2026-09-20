@@ -10,6 +10,8 @@
 - `gh`/`git` 环境准备、权限边界、Actions Secrets/Variables 和 Telegram 接线；
 - shadow、分析、Codex 自主修复/提交/建 PR、交付跟踪的 workflow 模板。
 
+控制仓同时提供后端和前端的 CI failure bridge 模板；四类入口和自动触发链见 [`docs/workflows.md`](docs/workflows.md)。
+
 唯一目标是把 GitHub Actions 配成维护者的 Codex CLI 工作台：平台只负责事件转发、权限、环境、Skill 和最终输出，所有 Issue/PR 判断、资料检索、代码库操作、答复与修复都交给 Codex CLI。
 
 每次任务都由官方 `openai/codex-action@v1` 调用 `codex exec`。目标代码的 clone、fetch、checkout、分支、编辑、测试、commit、push、PR、Issue 回复和 Telegram 通知（如启用）均由 Codex CLI 根据提示词完成；Actions 只负责启动、提供环境和根据 Codex 退出码收尾。

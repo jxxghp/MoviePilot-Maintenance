@@ -26,7 +26,8 @@
 | --- | --- | --- |
 | `integrations/MoviePilot-event-bridge.yml` | `.github/workflows/moviepilot-codex-events.yml` | 使用对应的 Frontend event bridge |
 | `integrations/MoviePilot-codex-run.yml` | `.github/workflows/moviepilot-codex-run.yml` | 使用对应的 Frontend codex run |
-| `integrations/MoviePilot-ci-bridge.yml` | `.github/workflows/moviepilot-codex-ci.yml` | 同名目标路径 |
+| `integrations/MoviePilot-ci-bridge.yml` | `.github/workflows/moviepilot-codex-ci.yml` | 后端 CI 失败入口 |
+| `integrations/MoviePilot-Frontend-ci-bridge.yml` | `.github/workflows/moviepilot-codex-ci.yml` | 前端 CI 失败入口 |
 | `integrations/MoviePilot-fix-dispatch.yml` | `.github/workflows/moviepilot-codex-fix.yml` | 同名目标路径 |
 
 其中 CI bridge 和 fix dispatch 是可选的；Issue/PR 自动分析至少需要前两份。所有模板中的：
