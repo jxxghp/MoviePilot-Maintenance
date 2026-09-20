@@ -72,6 +72,7 @@ concurrency:
 
 jobs:
   codex:
+    if: ${{ inputs.autofix_enabled == true }}
     name: Run approved Codex fix
     runs-on: ubuntu-latest
     timeout-minutes: 120

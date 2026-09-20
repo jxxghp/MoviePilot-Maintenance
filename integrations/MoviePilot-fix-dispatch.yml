@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   codex:
+    if: ${{ vars.CODEX_ENABLED == 'true' && vars.CODEX_AUTOFIX_ENABLED == 'true' }}
     uses: jxxghp/MoviePilot-Maintenance/.github/workflows/codex-fix.yml@CONTROL_REF
     with:
       control_repository: jxxghp/MoviePilot-Maintenance
