@@ -67,7 +67,7 @@ jobs:
           for workflow in .github/workflows/codex-event.yml .github/workflows/codex-propose.yml .github/workflows/codex-fix.yml .github/workflows/codex-reconcile.yml; do
             grep -q 'openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af' "$workflow"
             grep -q 'responses-api-endpoint:' "$workflow"
-            grep -q 'curl --ipv6' "$workflow"
+            grep -q 'curl --silent --show-error --max-time 15' "$workflow"
             grep -q 'permission-profile: ":danger-full-access"' "$workflow"
             grep -q 'safety-strategy: drop-sudo' "$workflow"
           done

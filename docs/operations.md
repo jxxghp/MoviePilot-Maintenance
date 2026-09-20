@@ -32,14 +32,14 @@ gh api rate_limit
 | `CODEX_ENABLED` | Repository/organization Variable | 默认 `false`；Secrets/Variables 完整配置并准备启用后才改为 `true` |
 | `CODEX_MODEL` | Repository/organization Variable | Codex GPT 模型名 |
 | `CODEX_EFFORT` | Repository/organization Variable | 推理强度 |
-| `OPENAI_BASE_URL` | Repository/organization Variable | 可选完整 Responses API 地址；例如 `https://mac.jxxghp.cn:8443/v1/responses` |
+| `OPENAI_BASE_URL` | Repository/organization Variable | 可选完整 Responses API 地址；推荐填写 Cloudflare Tunnel 公共地址，例如 `https://codex-api.example.com/v1/responses` |
 | `TELEGRAM_BOT_TOKEN` | Repository/organization Secret | Codex 按提示词通知固定 chat |
 | `TELEGRAM_CHAT_ID` | Repository/organization Variable/Secret | 固定收件人 |
 | `TELEGRAM_ENABLED` | Repository/organization Variable | 默认 `false`；只控制是否向 Codex 注入通知凭据 |
 
 不要设置 `OPENAI_API_KEY`/`CODEX_API_KEY` 为整个 job 环境变量；使用 Codex Action 的专用输入。公开仓库不使用 Codex 登录态文件。
 
-自定义 endpoint 必须从 GitHub-hosted runner 可达；当前 reusable workflow 会先用 `curl --ipv6` 做无密钥预检。若日志出现 `status=000`，应先为域名配置公网 AAAA、开放 8443/TLS 入站并确认服务接受 GitHub Actions 出口，再检查 API key。
+自定义 endpoint 必须从 GitHub-hosted runner 可达；当前 reusable workflow 会先用普通 HTTPS `curl` 做无密钥预检。若日志出现 `status=000`，应先检查 Cloudflare Tunnel/公网中转、TLS 和源站服务，再检查 API key。对只提供 IPv6 的本机源站，不能以本机 `curl -6` 成功代替 GitHub-hosted runner 的可达性验证。
 
 ## 权限环境
 

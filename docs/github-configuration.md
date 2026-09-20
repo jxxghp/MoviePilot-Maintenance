@@ -65,7 +65,7 @@
 | `CODEX_ENABLED` | `false` | 总开关；确认 API key、模型和权限已配置后才改为 `true` |
 | `CODEX_MODEL` | 账号支持的 Codex GPT 模型名 | 传给官方 Codex Action；留空则使用 Action/CLI 默认模型 |
 | `CODEX_EFFORT` | `medium` | Codex 推理强度；修复入口模板默认使用 `high` |
-| `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理配置完整 Responses API 地址，例如 `https://mac.jxxghp.cn:8443/v1/responses`。GitHub-hosted runner 必须能通过公网 IPv6 访问该地址，并且域名应有可达的 AAAA 记录 |
+| `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理配置完整 Responses API 地址，例如 `https://codex-api.example.com/v1/responses`。推荐使用 Cloudflare Tunnel 或其它公网双栈 HTTPS 中转；不要把只在本机 DNS/IPv6 网络可达的地址直接给 GitHub-hosted runner |
 | `TELEGRAM_ENABLED` | `false` | 是否向 Codex 注入 Telegram 通知凭据 |
 | `TELEGRAM_CHAT_ID` | 空 | 固定维护者用户或群组 ID，不能由 Issue/PR/模型提供 |
 | `CODEX_PUBLISH_COMMENTS` | `false` | `false` 只上传结果 artifact；`true` 才允许 Codex 用 `gh issue comment` 回复 |
@@ -73,9 +73,55 @@
 
 推荐的初始配置是：`CODEX_ENABLED=false`、`CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`、`TELEGRAM_ENABLED=false`。确认 `OPENAI_API_KEY` 和其它配置就绪后才把 `CODEX_ENABLED` 改为 `true`。这不会限制 Codex CLI 的本地执行权限，只控制是否启动任务以及是否拥有对应的 GitHub 写入能力和是否主动发送通知。
 
-如果配置了 `OPENAI_BASE_URL`，每次 Codex job 会先执行不携带 API key 的 IPv6 连通性预检；预检失败时不会启动 Codex，也不会消耗模型请求。日志中的 `remote=... status=...` 用于确认 runner 实际访问的地址；`status=000` 表示尚未建立 HTTP 连接。
+如果配置了 `OPENAI_BASE_URL`，每次 Codex job 会先执行不携带 API key 的 HTTPS 连通性预检；预检失败时不会启动 Codex，也不会消耗模型请求。日志中的 `remote=... status=...` 用于确认 runner 实际访问的地址；`status=000` 表示尚未建立 HTTP 连接。若源站只有 IPv6，不能仅凭本机 `curl -6` 成功判断 GitHub-hosted runner 可达；应使用下面的 Cloudflare Tunnel 中转，或改用具备 IPv6 出口的 self-hosted runner。
 
-## 6. 控制仓补漏 workflow 的配置
+## 6. 用 Cloudflare Tunnel 中转 IPv6 源站（推荐）
+
+如果 MoviePilot 的 Responses API 只在 Mac 的公网 IPv6 上提供服务，推荐使用 Cloudflare Tunnel。Tunnel 由 Mac 主动向 Cloudflare 建立出站连接，GitHub Actions 只访问 Cloudflare 公网边缘，不需要 GitHub-hosted runner 直接访问你的 IPv6 源站，也不需要在路由器上开放 8443 入站。
+
+### 6.1 在 Cloudflare 创建 Tunnel
+
+1. 把一个域名接入 Cloudflare，在 Zero Trust/Networks/Tunnels 创建一个 `cloudflared` Tunnel。
+2. 在 Tunnel 的 Published application 中新增公共主机名，例如 `codex-api.example.com`。
+3. 如果 `cloudflared` 与 API 在同一台 Mac，Service URL 填 `https://localhost:8443`。不要把公共主机名再填回 Service URL，否则会形成回环。
+4. 在 Additional application settings 中配置：
+   - `Origin Server Name`：`mac.jxxghp.cn`，因为现有源站证书签发给这个名称；
+   - `Disable TLS verification`：关闭；
+   - `HTTP Host Header`：如果源站按 Host 路由，填 `mac.jxxghp.cn`；否则可留空。
+5. 在 Mac 安装并运行 Cloudflare 给出的 connector 命令。Homebrew 方式示例：
+
+   ```bash
+   brew install cloudflared
+   sudo cloudflared service install '<从 Cloudflare 控制台复制的 Tunnel token>'
+   ```
+
+   Tunnel token 只保存在 Mac 的服务配置中，不要提交到仓库、Issue、PR 或 GitHub Actions Variables。
+
+Cloudflare 会自动为 `codex-api.example.com` 创建指向 `<TUNNEL_ID>.cfargotunnel.com` 的 DNS 记录。保持代理状态为橙云；不要把这个记录改成 DNS only。Cloudflare 官方文档说明，使用 HTTPS 源站时应通过 `Origin Server Name` 保持证书校验，而不是关闭 TLS 校验。
+
+### 6.2 验证并切换 Actions
+
+先从一台不在同一局域网的机器验证公共入口：
+
+```bash
+curl -i --max-time 15 https://codex-api.example.com/v1/responses
+```
+
+不带 API key 时得到 `401` 或接口定义的 `4xx` 是正常的；重点是不能出现 DNS、TCP、TLS 或 `502/504` 错误。然后在 `MoviePilot` 和 `MoviePilot-Frontend` 两个目标仓的 Actions Variables 中设置：
+
+```text
+OPENAI_BASE_URL=https://codex-api.example.com/v1/responses
+```
+
+不要修改 `OPENAI_API_KEY` 的配置方式。下一次运行日志应出现类似 `Responses endpoint preflight: remote=<Cloudflare address> status=401`，随后才会启动 Codex CLI。
+
+不要给这个主机名套 Cloudflare Access 的网页登录策略；官方 Codex Action 不会进行浏览器登录。API 自身的 `OPENAI_API_KEY`、Cloudflare WAF/rate limit 和源站应用鉴权可以继续使用。
+
+### 6.3 不使用 Tunnel 的替代方案
+
+也可以在 Cloudflare DNS 创建一个新的 `AAAA` 记录指向源站 IPv6，并打开橙云代理。Cloudflare 默认支持 HTTPS 8443 端口，并可把访问转发到 IPv6 origin；但必须额外处理源站证书的主机名、Host/SNI、源站防火墙只允许 Cloudflare IP，以及 Cloudflare 到源站的 IPv6 路由。对于当前 `mac.jxxghp.cn` 证书和本机服务，Tunnel 的 `Service URL=https://localhost:8443` 更不容易出错。
+
+## 7. 控制仓补漏 workflow 的配置
 
 如果启用 `.github/workflows/codex-reconcile.yml`，在控制仓配置：
 
@@ -94,7 +140,7 @@
 
 补漏 workflow 不依赖目标仓的 `GITHUB_TOKEN`，因为它在控制仓运行；必须配置 `MAINTENANCE_TARGET_GH_TOKEN` 才能跨仓读取目标项目。
 
-## 7. Telegram 配置
+## 8. Telegram 配置
 
 1. 在 Telegram 创建 Bot，取得 Bot token，写入 `TELEGRAM_BOT_TOKEN`。
 2. 将维护者用户或群组的固定 chat ID 写入 `TELEGRAM_CHAT_ID`。
@@ -104,7 +150,7 @@
 
 消息格式、长度、脱敏、失败语义和“只向固定收件人发送”由注入的 `skills/moviepilot-telegram/SKILL.md` 规定。Telegram Skill 不保存 token/chat ID，也不接收 Issue/PR 中提供的收件人。
 
-## 8. Codex CLI 权限和 GitHub 权限的区别
+## 9. Codex CLI 权限和 GitHub 权限的区别
 
 Codex Action 使用控制仓 `config/codex.toml` 中的官方内置 `:danger-full-access` profile，并设置 `approval_policy = "never"`。它允许 Codex CLI 在 runner 上完整执行 clone、fetch、checkout、编辑、测试、commit、push、PR/comment 和公开资料检索，不产生交互式授权请求；`drop-sudo` 只禁止提升为 root。GitHub API 能做什么仍由当前 workflow 的 `permissions` 和 `GH_TOKEN` 决定，二者不是同一层权限。
 
@@ -115,7 +161,7 @@ Codex Action 使用控制仓 `config/codex.toml` 中的官方内置 `:danger-ful
 - Actions 只转发事件、准备凭据、注入 prompt/Skill/config、启动 Codex、保存最终 JSON 和根据退出码结束；
 - 不要在 runner 上安装第二套 Agent、GitHub API 客户端、补丁应用器或数据库。
 
-## 9. 首次验证顺序
+## 10. 首次验证顺序
 
 1. 两个目标仓先保持 `CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`、`TELEGRAM_ENABLED=false`。
 2. 提交模板后打开一个测试 Issue，确认 `moviepilot-codex-events.yml` 只做一次同仓 `workflow_dispatch`，然后 `moviepilot-codex-run.yml` 启动 Codex。

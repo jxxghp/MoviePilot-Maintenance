@@ -169,16 +169,16 @@ jobs:
           GH_TOKEN="$TARGET_GH_TOKEN" gh auth status --hostname github.com
           GH_TOKEN="$TARGET_GH_TOKEN" gh api rate_limit --jq '.resources.core.remaining' >/dev/null
 
-      - name: Verify configured Responses API endpoint over IPv6
+      - name: Verify configured Responses API endpoint
         if: ${{ inputs.openai_base_url != '' }}
         shell: bash
         env:
           RESPONSES_API_ENDPOINT: ${{ inputs.openai_base_url }}
         run: |
           set -euo pipefail
-          curl --ipv6 --silent --show-error --max-time 15 \
+          curl --silent --show-error --max-time 15 \
             --output /dev/null \
-            --write-out 'Responses endpoint IPv6 preflight: remote=%{remote_ip} status=%{http_code}\n' \
+            --write-out 'Responses endpoint preflight: remote=%{remote_ip} status=%{http_code}\n' \
             "$RESPONSES_API_ENDPOINT"
 
       - name: Run Codex CLI

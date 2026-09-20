@@ -92,16 +92,16 @@ jobs:
           test -s "$GITHUB_WORKSPACE/.codex-home/config.toml"
           test -s "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram/SKILL.md"
 
-      - name: Verify configured Responses API endpoint over IPv6
+      - name: Verify configured Responses API endpoint
         if: ${{ vars.OPENAI_BASE_URL != '' }}
         shell: bash
         env:
           RESPONSES_API_ENDPOINT: ${{ vars.OPENAI_BASE_URL }}
         run: |
           set -euo pipefail
-          curl --ipv6 --silent --show-error --max-time 15 \
+          curl --silent --show-error --max-time 15 \
             --output /dev/null \
-            --write-out 'Responses endpoint IPv6 preflight: remote=%{remote_ip} status=%{http_code}\n' \
+            --write-out 'Responses endpoint preflight: remote=%{remote_ip} status=%{http_code}\n' \
             "$RESPONSES_API_ENDPOINT"
 
       - name: Run Codex CLI
