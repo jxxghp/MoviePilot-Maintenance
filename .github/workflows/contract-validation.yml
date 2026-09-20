@@ -48,6 +48,9 @@ jobs:
             grep -q 'permission-profile: ":danger-full-access"' "$workflow"
             grep -q 'safety-strategy: drop-sudo' "$workflow"
           done
+          for prompt in issue-triage pr-review issue-fix ci-fix delivery; do
+            test -s "prompts/${prompt}.md"
+          done
           grep -q 'openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af' .github/workflows/*.yml
           if rg -n 'actions/checkout' .github/workflows/codex-*.yml integrations/*.yml; then
             echo 'Target maintenance workflows must not checkout target code' >&2
