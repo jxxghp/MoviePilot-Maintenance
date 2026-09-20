@@ -53,7 +53,7 @@ gh api rate_limit
 
 ## 停机与恢复
 
-将 Variables 的 `CODEX_ENABLED`、`CODEX_AUTOFIX_ENABLED` 和 `CODEX_PUBLISH_COMMENTS` 改为 `false`，撤销不必要的 GitHub token 写权限并取消运行中的 job。失败时保留 Codex 最终输出和 Actions 日志，再从 GitHub 重新触发；不由另一个脚本猜测 Codex 是否已提交，Codex 提示词要求先用 `git status`/`gh pr list` 读回再重试。
+将 Variables 的 `CODEX_ENABLED`、`CODEX_RECONCILE_ENABLED`、`CODEX_AUTOFIX_ENABLED` 和 `CODEX_PUBLISH_COMMENTS` 改为 `false`，撤销不必要的 GitHub token 写权限并取消运行中的 job。失败时保留 Codex 最终输出和 Actions 日志，再从 GitHub 重新触发；不由另一个脚本猜测 Codex 是否已提交，Codex 提示词要求先用 `git status`/`gh pr list` 读回再重试。
 
 ## 安装顺序
 

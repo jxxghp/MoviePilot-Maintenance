@@ -92,6 +92,7 @@
 | `TELEGRAM_ENABLED` | Variable | `true`/`false` |
 | `TELEGRAM_CHAT_ID` | Variable 或 Secret | 固定收件人 |
 | `DEFAULT_TARGET_REPOSITORY` | Variable | 默认 `jxxghp/MoviePilot` |
+| `CODEX_RECONCILE_ENABLED` | Variable | 默认 `false`；配置 `MAINTENANCE_TARGET_GH_TOKEN` 后才启用定时补漏 |
 
 补漏 workflow 不依赖目标仓的 `GITHUB_TOKEN`，因为它在控制仓运行；必须配置 `MAINTENANCE_TARGET_GH_TOKEN` 才能跨仓读取目标项目。
 

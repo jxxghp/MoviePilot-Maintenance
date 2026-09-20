@@ -28,6 +28,7 @@ concurrency:
 
 jobs:
   codex:
+    if: ${{ vars.CODEX_RECONCILE_ENABLED == 'true' }}
     name: Run Codex against configured target
     runs-on: ubuntu-latest
     timeout-minutes: 60
