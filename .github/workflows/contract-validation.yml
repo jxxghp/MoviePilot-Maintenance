@@ -36,6 +36,26 @@ jobs:
           assert set(schema['required']) >= {
               'status', 'repository', 'ref', 'summary', 'changed', 'tests', 'needs_human'
           }
+
+          def validate_codex_schema(node, path='$'):
+              if isinstance(node, dict):
+                  assert 'format' not in node, f'unsupported JSON Schema format at {path}'
+                  if 'properties' in node:
+                      properties = set(node['properties'])
+                      required = set(node.get('required', []))
+                      assert required == properties, (
+                          f'strict Codex schema requires every object property at {path}'
+                      )
+                      assert node.get('additionalProperties') is False, (
+                          f'additionalProperties must be false at {path}'
+                      )
+                  for key, value in node.items():
+                      validate_codex_schema(value, f'{path}.{key}')
+              elif isinstance(node, list):
+                  for index, value in enumerate(node):
+                      validate_codex_schema(value, f'{path}[{index}]')
+
+          validate_codex_schema(schema)
           print('TOML and JSON contracts: OK')
           PY
 
