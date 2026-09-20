@@ -1,0 +1,210 @@
+name: MoviePilot Codex approved fix runner
+
+on:
+  workflow_call:
+    inputs:
+      control_repository:
+        description: Full owner/repository name of this control repository.
+        required: true
+        type: string
+      control_ref:
+        description: Full commit SHA containing the trusted prompt and result schema.
+        required: true
+        type: string
+      prompt_name:
+        description: Trusted fix prompt basename without the .md suffix.
+        required: false
+        default: issue-fix
+        type: string
+      environment_name:
+        description: Protected GitHub Environment for write access.
+        required: false
+        default: autofix
+        type: string
+      codex_model:
+        description: Codex model name; an empty value uses the Action/CLI default.
+        required: false
+        default: ""
+        type: string
+      codex_effort:
+        description: Codex reasoning effort.
+        required: false
+        default: high
+        type: string
+      openai_base_url:
+        description: Optional OpenAI-compatible base URL.
+        required: false
+        default: ""
+        type: string
+      publish_comments:
+        description: Whether the trusted prompt may publish an Issue/PR comment.
+        required: false
+        default: true
+        type: boolean
+      autofix_enabled:
+        description: Whether the trusted prompt may edit and publish a fix.
+        required: false
+        default: true
+        type: boolean
+      telegram_enabled:
+        description: Whether the fixed Telegram integration variables are available to Codex.
+        required: false
+        default: false
+        type: boolean
+      telegram_chat_id:
+        description: Fixed Telegram recipient configured by the maintainer.
+        required: false
+        default: ""
+        type: string
+    secrets:
+      OPENAI_API_KEY:
+        required: true
+      MAINTENANCE_CONTROL_READ_TOKEN:
+        required: false
+      MAINTENANCE_TARGET_GH_TOKEN:
+        required: false
+      TELEGRAM_BOT_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: moviepilot-codex-fix-${{ github.repository }}-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  codex:
+    name: Run approved Codex fix
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: ${{ inputs.environment_name }}
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    env:
+      CONTROL_REPOSITORY: ${{ inputs.control_repository }}
+      CONTROL_REF: ${{ inputs.control_ref }}
+      PROMPT_NAME: ${{ inputs.prompt_name }}
+      TARGET_GH_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN || github.token }}
+      CONTROL_GH_TOKEN: ${{ secrets.MAINTENANCE_CONTROL_READ_TOKEN }}
+      GITHUB_EVENT_PATH: ${{ github.event_path }}
+      TARGET_REPOSITORY: ${{ github.repository }}
+      TARGET_NUMBER: ${{ github.event.inputs.issue_number || github.event.issue.number || github.event.pull_request.number || '' }}
+
+    steps:
+      - name: Prepare git and gh for Codex
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          command -v git
+          command -v gh
+          command -v jq
+
+          if [[ ! "$CONTROL_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "Invalid control repository" >&2
+            exit 2
+          fi
+          if [[ ! "$CONTROL_REF" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "control_ref must be a full commit SHA" >&2
+            exit 2
+          fi
+          case "$PROMPT_NAME" in
+            issue-fix|ci-fix|delivery) ;;
+            *)
+              echo "Prompt is not an approved fix prompt" >&2
+              exit 2
+              ;;
+          esac
+
+          control_token="$CONTROL_GH_TOKEN"
+          if [[ -z "$control_token" ]]; then
+            control_token="$TARGET_GH_TOKEN"
+          fi
+
+          GH_TOKEN="$control_token" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/prompts/${PROMPT_NAME}.md?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.codex-maintenance-prompt.md"
+          GH_TOKEN="$control_token" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/schemas/codex-result.schema.json?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.codex-maintenance-result.schema.json"
+          mkdir -p "$GITHUB_WORKSPACE/.codex-home"
+          GH_TOKEN="$control_token" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/config/codex.toml?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.codex-home/config.toml"
+          mkdir -p "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram"
+          GH_TOKEN="$control_token" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/skills/moviepilot-telegram/SKILL.md?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram/SKILL.md"
+
+          test -s "$GITHUB_WORKSPACE/.codex-maintenance-prompt.md"
+          test -s "$GITHUB_WORKSPACE/.codex-maintenance-result.schema.json"
+          test -s "$GITHUB_WORKSPACE/.codex-home/config.toml"
+          test -s "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram/SKILL.md"
+
+          git config --global user.name 'moviepilot-codex[bot]'
+          git config --global user.email 'moviepilot-codex[bot]@users.noreply.github.com'
+          GH_TOKEN="$TARGET_GH_TOKEN" gh auth setup-git
+          GH_TOKEN="$TARGET_GH_TOKEN" gh auth status --hostname github.com
+          GH_TOKEN="$TARGET_GH_TOKEN" gh api rate_limit --jq '.resources.core.remaining' >/dev/null
+
+      - name: Run Codex CLI
+        uses: openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .codex-maintenance-prompt.md
+          output-file: codex-result.json
+          output-schema-file: .codex-maintenance-result.schema.json
+          model: ${{ inputs.codex_model }}
+          effort: ${{ inputs.codex_effort }}
+          allow-bots: true
+          codex-home: .codex-home
+          permission-profile: moviepilot-workspace-net
+          safety-strategy: drop-sudo
+          codex-args: '["--ephemeral"]'
+        env:
+          GH_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN || github.token }}
+          CODEX_PUBLISH_COMMENTS: ${{ inputs.publish_comments }}
+          CODEX_AUTOFIX_ENABLED: ${{ inputs.autofix_enabled }}
+          CODEX_MODEL: ${{ inputs.codex_model }}
+          CODEX_EFFORT: ${{ inputs.codex_effort }}
+          TARGET_NUMBER: ${{ env.TARGET_NUMBER }}
+          OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
+          TELEGRAM_ENABLED: ${{ inputs.telegram_enabled }}
+          TELEGRAM_CHAT_ID: ${{ inputs.telegram_enabled && inputs.telegram_chat_id || '' }}
+          TELEGRAM_BOT_TOKEN: ${{ inputs.telegram_enabled && secrets.TELEGRAM_BOT_TOKEN || '' }}
+
+      - name: Validate Codex result envelope
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s codex-result.json
+          jq -e '
+            type == "object" and
+            (.status | type == "string") and
+            (.repository | type == "string") and
+            (.ref | type == "string") and
+            (.summary | type == "string") and
+            (.changed | type == "boolean") and
+            (.tests | type == "array") and
+            (.needs_human | type == "boolean")
+          ' codex-result.json >/dev/null
+
+      - name: Upload Codex final output
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fix-result-${{ github.run_id }}
+          path: codex-result.json
+          if-no-files-found: ignore
+          retention-days: 30

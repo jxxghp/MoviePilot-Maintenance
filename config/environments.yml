@@ -1,0 +1,19 @@
+defaults:
+  mode: shadow
+  publish_comments: false
+  autofix_enabled: false
+  telegram_enabled: false
+  control_ref: REPLACE_WITH_FULL_CONTROL_REPOSITORY_SHA
+  github_token_mode: actions_github_token
+
+environments:
+  shadow:
+    required_reviewers: []
+    permissions: contents:read,issues:read,pull-requests:read
+  propose:
+    required_reviewers: [maintainer]
+    permissions: contents:read,issues:write,pull-requests:read
+  autofix:
+    required_reviewers: [maintainer]
+    permissions: contents:write,issues:write,pull-requests:write
+    optional_secret: MAINTENANCE_TARGET_GH_TOKEN

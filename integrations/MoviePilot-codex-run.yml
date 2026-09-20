@@ -1,0 +1,91 @@
+# Copy to the target repository as .github/workflows/moviepilot-codex-run.yml.
+# The event-intake workflow dispatches this file with only event metadata.
+# Replace CONTROL_REF with a full 40-character SHA of the trusted control commit.
+name: MoviePilot Codex trusted run
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt_name:
+        description: issue-triage, pr-review, ci-fix, or delivery.
+        required: true
+        type: string
+      source_event:
+        description: Original GitHub event name.
+        required: true
+        type: string
+      target_kind:
+        description: issue, pull_request, ci, or delivery.
+        required: true
+        type: string
+      target_number:
+        description: Original Issue or PR number when available.
+        required: false
+        type: string
+      target_ref:
+        description: Target branch or ref.
+        required: false
+        type: string
+      target_sha:
+        description: Target commit SHA.
+        required: false
+        type: string
+      target_run_id:
+        description: Original CI run id when available.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  shadow:
+    if: ${{ vars.CODEX_PUBLISH_COMMENTS != 'true' }}
+    uses: jxxghp/MoviePilot-Maintenance/.github/workflows/codex-event.yml@CONTROL_REF
+    with:
+      control_repository: jxxghp/MoviePilot-Maintenance
+      control_ref: CONTROL_REF
+      prompt_name: ${{ inputs.prompt_name }}
+      environment_name: shadow
+      codex_model: ${{ vars.CODEX_MODEL }}
+      codex_effort: ${{ vars.CODEX_EFFORT || 'medium' }}
+      openai_base_url: ${{ vars.OPENAI_BASE_URL }}
+      publish_comments: false
+      autofix_enabled: false
+      telegram_enabled: false
+      telegram_chat_id: ""
+      source_event: ${{ inputs.source_event }}
+      target_kind: ${{ inputs.target_kind }}
+      target_number: ${{ inputs.target_number }}
+      target_ref: ${{ inputs.target_ref }}
+      target_sha: ${{ inputs.target_sha }}
+      target_run_id: ${{ inputs.target_run_id }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      MAINTENANCE_CONTROL_READ_TOKEN: ${{ secrets.MAINTENANCE_CONTROL_READ_TOKEN }}
+
+  propose:
+    if: ${{ vars.CODEX_PUBLISH_COMMENTS == 'true' }}
+    uses: jxxghp/MoviePilot-Maintenance/.github/workflows/codex-propose.yml@CONTROL_REF
+    with:
+      control_repository: jxxghp/MoviePilot-Maintenance
+      control_ref: CONTROL_REF
+      prompt_name: ${{ inputs.prompt_name }}
+      environment_name: propose
+      codex_model: ${{ vars.CODEX_MODEL }}
+      codex_effort: ${{ vars.CODEX_EFFORT || 'medium' }}
+      openai_base_url: ${{ vars.OPENAI_BASE_URL }}
+      telegram_enabled: ${{ vars.TELEGRAM_ENABLED == 'true' }}
+      telegram_chat_id: ${{ vars.TELEGRAM_CHAT_ID }}
+      source_event: ${{ inputs.source_event }}
+      target_kind: ${{ inputs.target_kind }}
+      target_number: ${{ inputs.target_number }}
+      target_ref: ${{ inputs.target_ref }}
+      target_sha: ${{ inputs.target_sha }}
+      target_run_id: ${{ inputs.target_run_id }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      MAINTENANCE_CONTROL_READ_TOKEN: ${{ secrets.MAINTENANCE_CONTROL_READ_TOKEN }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

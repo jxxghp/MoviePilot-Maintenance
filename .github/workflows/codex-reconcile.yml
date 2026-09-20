@@ -1,0 +1,137 @@
+name: MoviePilot Codex scheduled maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_repository:
+        description: Target owner/repository; defaults to DEFAULT_TARGET_REPOSITORY.
+        required: false
+        type: string
+      target_number:
+        description: Optional Issue or PR number.
+        required: false
+        type: string
+      prompt_name:
+        description: issue-triage, pr-review, ci-fix, or delivery.
+        required: false
+        default: delivery
+        type: string
+  schedule:
+    - cron: '17 */2 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: moviepilot-codex-reconcile-${{ inputs.target_repository || vars.DEFAULT_TARGET_REPOSITORY || 'jxxghp/MoviePilot' }}
+  cancel-in-progress: false
+
+jobs:
+  codex:
+    name: Run Codex against configured target
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: ${{ vars.CODEX_RECONCILE_ENVIRONMENT || 'shadow' }}
+    permissions:
+      contents: read
+    env:
+      TARGET_REPOSITORY: ${{ inputs.target_repository || vars.DEFAULT_TARGET_REPOSITORY || 'jxxghp/MoviePilot' }}
+      TARGET_NUMBER: ${{ inputs.target_number }}
+      PROMPT_NAME: ${{ inputs.prompt_name || 'delivery' }}
+      CONTROL_REPOSITORY: ${{ github.repository }}
+      CONTROL_REF: ${{ github.sha }}
+      TARGET_GH_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN }}
+      GITHUB_EVENT_PATH: ${{ github.event_path }}
+
+    steps:
+      - name: Prepare gh and fetch trusted Codex contract
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          command -v git
+          command -v gh
+          command -v jq
+          if [[ ! "$TARGET_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "Invalid target repository" >&2
+            exit 2
+          fi
+          case "$PROMPT_NAME" in
+            issue-triage|pr-review|ci-fix|delivery) ;;
+            *)
+              echo "Prompt is not on the trusted allowlist" >&2
+              exit 2
+              ;;
+          esac
+          test -n "$TARGET_GH_TOKEN"
+
+          GH_TOKEN="$TARGET_GH_TOKEN" gh auth setup-git
+          GH_TOKEN="$TARGET_GH_TOKEN" gh auth status --hostname github.com
+          GH_TOKEN="$TARGET_GH_TOKEN" gh api rate_limit --jq '.resources.core.remaining' >/dev/null
+
+          GH_TOKEN="$TARGET_GH_TOKEN" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/prompts/${PROMPT_NAME}.md?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.codex-maintenance-prompt.md"
+          GH_TOKEN="$TARGET_GH_TOKEN" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/schemas/codex-result.schema.json?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.codex-maintenance-result.schema.json"
+          mkdir -p "$GITHUB_WORKSPACE/.codex-home"
+          GH_TOKEN="$TARGET_GH_TOKEN" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/config/codex.toml?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.codex-home/config.toml"
+          mkdir -p "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram"
+          GH_TOKEN="$TARGET_GH_TOKEN" gh api \
+            --header 'Accept: application/vnd.github.raw+json' \
+            "repos/${CONTROL_REPOSITORY}/contents/skills/moviepilot-telegram/SKILL.md?ref=${CONTROL_REF}" \
+            > "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram/SKILL.md"
+          test -s "$GITHUB_WORKSPACE/.codex-maintenance-prompt.md"
+          test -s "$GITHUB_WORKSPACE/.codex-maintenance-result.schema.json"
+          test -s "$GITHUB_WORKSPACE/.codex-home/config.toml"
+          test -s "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram/SKILL.md"
+
+      - name: Run Codex CLI
+        uses: openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .codex-maintenance-prompt.md
+          output-file: codex-result.json
+          output-schema-file: .codex-maintenance-result.schema.json
+          model: ${{ vars.CODEX_MODEL }}
+          effort: ${{ vars.CODEX_EFFORT || 'medium' }}
+          allow-bots: true
+          codex-home: .codex-home
+          permission-profile: moviepilot-analysis-net
+          safety-strategy: drop-sudo
+          codex-args: '["--ephemeral"]'
+        env:
+          GH_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MAINTENANCE_TARGET_GH_TOKEN }}
+          TARGET_REPOSITORY: ${{ env.TARGET_REPOSITORY }}
+          TARGET_NUMBER: ${{ env.TARGET_NUMBER }}
+          CODEX_PUBLISH_COMMENTS: ${{ vars.CODEX_PUBLISH_COMMENTS == 'true' }}
+          CODEX_AUTOFIX_ENABLED: false
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+          TELEGRAM_ENABLED: ${{ vars.TELEGRAM_ENABLED == 'true' }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_ENABLED == 'true' && vars.TELEGRAM_CHAT_ID || '' }}
+          TELEGRAM_BOT_TOKEN: ${{ vars.TELEGRAM_ENABLED == 'true' && secrets.TELEGRAM_BOT_TOKEN || '' }}
+
+      - name: Validate and upload Codex result
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f codex-result.json ]]; then
+            jq -e 'type == "object" and (.status | type == "string") and (.summary | type == "string")' codex-result.json >/dev/null
+          fi
+
+      - name: Upload Codex final output
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-reconcile-result-${{ github.run_id }}
+          path: codex-result.json
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,0 +1,8 @@
+repositories:
+  - name: jxxghp/MoviePilot
+    base: v3
+    prompts: [issue-triage, pr-review, issue-fix, ci-fix, delivery]
+  - name: jxxghp/MoviePilot-Frontend
+    base: v3
+    prompts: [issue-triage, pr-review, issue-fix, ci-fix, delivery]
+
