@@ -1,6 +1,6 @@
 # 发布与试点
 
-1. 创建私有 `MoviePilot-Maintenance` 控制仓，提交本目录后记录完整 control ref SHA。
+1. 使用公开的 `jxxghp/MoviePilot-Maintenance` 控制仓，记录完整 control ref SHA。
 2. 在目标仓添加事件 intake 和对应的 `*-codex-run.yml`，按 `docs/github-configuration.md` 配置 repository/organization Actions Secrets/Variables；intake 只用带 `actions: write` 的 `GITHUB_TOKEN` dispatch trusted run，不使用 `actions/checkout`，也不接触 OpenAI/Telegram Secret。
 3. 先只触发 Codex 分析，不允许评论；回放至少 30 个有已知结论的历史 Issue/PR，检查 Codex 最终输出、工具调用和提示词注入样例。
 4. 开启 `CODEX_PUBLISH_COMMENTS=true` 后，事件桥才调用有 Issue comment 权限的 `codex-propose.yml`；由 Codex 自己通过 `gh issue comment` 回复，运行中不等待人工批准。

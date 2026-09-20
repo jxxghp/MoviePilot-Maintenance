@@ -4,8 +4,8 @@
 
 ## 1. 创建控制仓并取得 full SHA
 
-1. 创建私有仓 `jxxghp/MoviePilot-Maintenance`，把本项目内容推到默认分支。
-2. 在控制仓 `Settings → Actions → General` 中允许目标仓使用本仓的 reusable workflows。私有控制仓必须把两个目标仓加入可访问仓库列表。
+1. 使用公开仓 `jxxghp/MoviePilot-Maintenance`，把本项目内容推到默认分支。
+2. 在控制仓 `Settings → Actions → General` 中确认允许 Actions 和 reusable workflows。公开控制仓不需要额外配置目标仓访问列表。
 3. 控制仓提交后取得完整提交号：
 
    ```bash
@@ -39,7 +39,7 @@
 
 在两个目标仓分别打开 `Settings → Actions → General`：
 
-1. 允许使用 Actions 和 reusable workflows；私有控制仓还必须允许它被这两个目标仓访问。
+1. 允许使用 Actions 和 reusable workflows；公开控制仓不需要额外授予目标仓访问权限。
 2. `Workflow permissions` 选择 `Read and write permissions`。事件 intake 需要 `actions: write` 调用同仓 `workflow_dispatch`，Codex 回复或修复需要 Issue/PR/Contents 写权限；工作流仍会在 job 级别声明实际使用的权限。
 3. 如果希望 Codex 创建 PR，打开允许 GitHub Actions 创建和批准 Pull Request 的仓库选项；不要把 `GITHUB_TOKEN` 手工写入 Secrets。
 4. 确认默认分支为 `v3`，并把上述工作流提交到该分支。`pull_request_target` 只会使用默认分支中的 intake 文件。
@@ -54,11 +54,11 @@
 | 名称 | 必需 | 配置位置 | 用途 |
 | --- | --- | --- | --- |
 | `OPENAI_API_KEY` | 是 | 两个目标仓 | 只作为官方 `openai/codex-action` 的 `openai-api-key` 输入 |
-| `MAINTENANCE_CONTROL_READ_TOKEN` | 控制仓私有时需要 | 两个目标仓 | 只读控制仓 prompt/schema/config/Skill；不传给 Codex |
+| `MAINTENANCE_CONTROL_READ_TOKEN` | 可选 | 两个目标仓 | 仅控制仓改为私有镜像时读取 prompt/schema/config/Skill；不传给 Codex |
 | `TELEGRAM_BOT_TOKEN` | 启用 Telegram 时需要 | 两个目标仓 | 注入 Telegram Skill；不要放进 URL 或日志 |
 | `MAINTENANCE_TARGET_GH_TOKEN` | 修复/跨仓补漏时可选 | 两个目标仓 | 最小权限 GitHub App 安装 token 或 fine-grained PAT；只传给受保护 fix/reconcile 入口 |
 
-`MAINTENANCE_CONTROL_READ_TOKEN` 只需要 `MoviePilot-Maintenance` 的 Contents read；如果控制仓是公开仓，可以省略。`MAINTENANCE_TARGET_GH_TOKEN` 只授予目标仓所需的 Contents、Issues、Pull requests、Actions 权限，不要授予组织管理权限，也不要把它注入外部 PR 的分析入口。
+公开控制仓可以省略 `MAINTENANCE_CONTROL_READ_TOKEN`；如果维护者建立私有控制仓镜像，才为该镜像配置 Contents read token。`MAINTENANCE_TARGET_GH_TOKEN` 只授予目标仓所需的 Contents、Issues、Pull requests、Actions 权限，不要授予组织管理权限，也不要把它注入外部 PR 的分析入口。
 
 ## 5. 目标仓 Actions Variables
 

@@ -25,7 +25,7 @@ gh api rate_limit
 | 名称 | 类型 | 说明 |
 | --- | --- | --- |
 | `OPENAI_API_KEY` | Repository/organization Secret | 只传给 `openai/codex-action` 的输入 |
-| `MAINTENANCE_CONTROL_READ_TOKEN` | Repository/organization Secret | 读取私有控制仓 prompt/schema；不传给 Codex |
+| `MAINTENANCE_CONTROL_READ_TOKEN` | 可选 Repository/organization Secret | 仅控制仓改为私有镜像时读取 prompt/schema；不传给 Codex |
 | `MAINTENANCE_TARGET_GH_TOKEN` | Repository/organization Secret | 修复/控制仓补漏可选的最小权限 GitHub App/PAT；分析任务不注入 |
 | `CODEX_MODEL` | Repository/organization Variable | Codex GPT 模型名 |
 | `CODEX_EFFORT` | Repository/organization Variable | 推理强度 |
@@ -56,7 +56,7 @@ gh api rate_limit
 
 ## 安装顺序
 
-1. 创建私有控制仓，提交本项目并记录提交 full SHA；不要用 floating branch/tag 作为 workflow 或 prompt 来源。
+1. 使用公开的 `jxxghp/MoviePilot-Maintenance` 控制仓，记录提交 full SHA；不要用 floating branch/tag 作为 workflow 或 prompt 来源。
 2. 在两个目标仓复制对应的无密钥事件 intake 和 `*-codex-run.yml` trusted run 模板，替换其中的 `CONTROL_REF`；按实际 CI 工作流复制 CI bridge，按需复制 fix dispatch。
 3. 在两个目标仓配置 repository/organization Actions Secrets 和 Variables；不需要创建 required-reviewer Environment。完整清单见 `docs/github-configuration.md`。
 4. 默认保持 `CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`；需要自动回复或自动修复时直接切换变量，Codex 运行中不会等待人工批准。
