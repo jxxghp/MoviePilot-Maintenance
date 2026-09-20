@@ -4,19 +4,12 @@
 
 四个模板不是同一类入口：Issue/PR 的自动入口是 `moviepilot-codex-events.yml`，CI 失败的自动入口是 `moviepilot-codex-ci.yml`，`moviepilot-codex-run.yml` 负责二段式分发，`moviepilot-codex-fix.yml` 只在维护者手工 dispatch 且两个开关都打开时获得写权限。完整链路和权限表见 [`workflows.md`](workflows.md)。
 
-## 1. 创建控制仓并取得 full SHA
+## 1. 创建控制仓并跟随最新 `main`
 
 1. 使用公开仓 `jxxghp/MoviePilot-Maintenance`，把本项目内容推到默认分支。
 2. 在控制仓 `Settings → Actions → General` 中确认允许 Actions 和 reusable workflows。公开控制仓不需要额外配置目标仓访问列表。
-3. 控制仓提交后取得完整提交号：
-
-   ```bash
-   git rev-parse HEAD
-   ```
-
-   记下返回的 40 位 `CONTROL_REF`。不要在目标仓模板中使用 `main`、`v3` 或短 SHA。
-
-控制仓中的 `.github/workflows/codex-*.yml` 是唯一执行面；`prompts/`、`schemas/`、`config/codex.toml` 和 `skills/` 都按这个 full SHA 读取。更新控制仓后，重新取得 full SHA，并同步更新目标仓模板中的 `CONTROL_REF`。
+3. 目标仓模板默认使用控制仓 `main`：`uses: ...@main` 且 `control_ref: main`。这样控制仓提交后，下一次目标仓运行自动读取最新的 prompt/schema/config/Skill，不需要再改目标仓 workflow。
+4. 为了保留可审计性，保护控制仓 `main`，至少要求 PR review、契约校验通过，并限制能够修改 `.github/workflows/`、`prompts/`、`schemas/` 和 `skills/` 的人员。若某次高风险任务需要不可变证据，仍可把两个目标仓临时改为 full SHA。
 
 ## 2. 两个目标仓要复制的文件
 
@@ -33,10 +26,10 @@
 其中 CI bridge 和 fix dispatch 是可选的；Issue/PR 自动分析至少需要前两份。所有模板中的：
 
 - `jxxghp/MoviePilot-Maintenance`：如果控制仓名称不同，替换成实际 `owner/repository`；
-- `CONTROL_REF`：替换成控制仓 40 位 full SHA；
+- `CONTROL_REF`：保持为 `main`；只有需要临时冻结版本时才替换成 40 位 full SHA；
 - `CI_WORKFLOW_NAME`：在 CI bridge 中替换成目标仓真实的 CI workflow 名称。
 
-不要把控制仓的 prompt 或 schema 复制到目标仓再自行修改；目标仓只保留触发模板，实际规则统一从控制仓 full SHA 读取。
+不要把控制仓的 prompt 或 schema 复制到目标仓再自行修改；目标仓只保留触发模板，实际规则统一从受保护控制仓 `main` 读取。
 
 ## 3. 目标仓 Actions 基础设置
 
@@ -91,7 +84,7 @@
 | `TELEGRAM_BOT_TOKEN` | Secret | 可选通知 |
 | `CODEX_MODEL` | Variable | Codex GPT 模型名 |
 | `CODEX_EFFORT` | Variable | 推理强度 |
-| `OPENAI_BASE_URL` | Variable | 可选模型代理地址 |
+| `OPENAI_BASE_URL` | Variable | 可选完整 Responses API 地址 |
 | `TELEGRAM_ENABLED` | Variable | `true`/`false` |
 | `TELEGRAM_CHAT_ID` | Variable 或 Secret | 固定收件人 |
 | `DEFAULT_TARGET_REPOSITORY` | Variable | 默认 `jxxghp/MoviePilot` |
@@ -124,9 +117,9 @@ Codex Action 使用控制仓 `config/codex.toml` 中的官方内置 `:danger-ful
 
 1. 两个目标仓先保持 `CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`、`TELEGRAM_ENABLED=false`。
 2. 提交模板后打开一个测试 Issue，确认 `moviepilot-codex-events.yml` 只做一次同仓 `workflow_dispatch`，然后 `moviepilot-codex-run.yml` 启动 Codex。
-3. 检查 Actions 日志中的 `gh auth status`、控制仓 full SHA、Codex 最终 JSON artifact 和目标仓/目标编号；确认没有 `actions/checkout`，目标代码由 Codex 自己 clone。
+3. 检查 Actions 日志中的 `gh auth status`、控制仓 ref、Codex 最终 JSON artifact 和目标仓/目标编号；确认没有 `actions/checkout`，目标代码由 Codex 自己 clone。
 4. 确认稳定后再把 `CODEX_PUBLISH_COMMENTS` 改为 `true`；需要自动修复时再启用 fix dispatch 和 `CODEX_AUTOFIX_ENABLED=true`。
-5. 修改控制仓 prompt、Skill、Schema 或权限后，重新提交控制仓、更新所有目标仓模板的 `CONTROL_REF`，再重复验证。
+5. 修改控制仓 prompt、Skill、Schema 或权限后，提交到受保护 `main` 并等待契约校验通过；目标仓下一次运行自动使用最新版本。高风险操作可临时切换为 full SHA 再验证。
 
 官方参考：
 

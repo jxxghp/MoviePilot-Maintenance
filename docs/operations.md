@@ -18,7 +18,7 @@ gh auth status
 gh api rate_limit
 ```
 
-工作流通过 `gh api` 从控制仓 full SHA 读取固定 prompt/schema/config，并把 `moviepilot-telegram` Skill 注入 `.agents/skills`；随后把 `GITHUB_REPOSITORY`、`TARGET_REPOSITORY`、`GITHUB_EVENT_NAME`、`GITHUB_EVENT_PATH`、目标 Issue/PR 编号、目标分支和控制仓 SHA 作为环境变量交给 Codex。提示词要求 Codex 自己执行 `gh repo clone`/`git fetch`/`git checkout`，完成工作后自己 `git commit`、`git push`、`gh pr create` 或 `gh issue comment`。官方 Codex Action 会在非 Git workspace 下以 `--skip-git-repo-check` 启动；Codex 必须立即在 `target/` 中 clone，不能把空 workspace 当作目标代码。Codex 使用完整非交互 permission profile，可进行公网资料检索和 runner 内完整命令执行；`drop-sudo` 只禁止提升为 root，提示词仍禁止执行不可信脚本和上传 Secrets。
+工作流通过 `gh api` 从受保护控制仓 `main`（或临时指定的 full SHA）读取 prompt/schema/config，并把 `moviepilot-telegram` Skill 注入 `.agents/skills`；随后把 `GITHUB_REPOSITORY`、`TARGET_REPOSITORY`、`GITHUB_EVENT_NAME`、`GITHUB_EVENT_PATH`、目标 Issue/PR 编号、目标分支和控制仓 ref 作为环境变量交给 Codex。提示词要求 Codex 自己执行 `gh repo clone`/`git fetch`/`git checkout`，完成工作后自己 `git commit`、`git push`、`gh pr create` 或 `gh issue comment`。官方 Codex Action 会在非 Git workspace 下以 `--skip-git-repo-check` 启动；Codex 必须立即在 `target/` 中 clone，不能把空 workspace 当作目标代码。Codex 使用完整非交互 permission profile，可进行公网资料检索和 runner 内完整命令执行；`drop-sudo` 只禁止提升为 root，提示词仍禁止执行不可信脚本和上传 Secrets。
 
 ## Secrets/Variables
 
@@ -59,8 +59,8 @@ gh api rate_limit
 
 ## 安装顺序
 
-1. 使用公开的 `jxxghp/MoviePilot-Maintenance` 控制仓，记录提交 full SHA；不要用 floating branch/tag 作为 workflow 或 prompt 来源。
-2. 在两个目标仓复制对应的无密钥事件 intake 和 `*-codex-run.yml` trusted run 模板，替换其中的 `CONTROL_REF`；按实际 CI 工作流复制 CI bridge，按需复制 fix dispatch。
+1. 使用公开的 `jxxghp/MoviePilot-Maintenance` 控制仓，保护其 `main` 分支并确保契约校验通过。
+2. 在两个目标仓复制对应的无密钥事件 intake 和 `*-codex-run.yml` trusted run 模板，保持 `@main`/`control_ref: main`；按实际 CI 工作流复制 CI bridge，按需复制 fix dispatch。
 3. 在两个目标仓配置 repository/organization Actions Secrets 和 Variables；不需要创建 required-reviewer Environment。完整清单见 `docs/github-configuration.md`。
 4. 默认保持 `CODEX_ENABLED=false`、`CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`；确认 Secrets/Variables 后将 `CODEX_ENABLED` 改为 `true`，再按需开启自动回复或自动修复，Codex 运行中不会等待人工批准。
 5. 先手工触发 Issue/PR 事件验证 artifact，再逐步打开评论和修复入口。整个过程不需要本地服务或本地数据库。

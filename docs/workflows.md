@@ -1,6 +1,6 @@
 # Workflow 运行链路
 
-本项目有两类 workflow：目标仓中的“入口/转发” workflow，以及控制仓中的“Codex 执行” reusable workflow。目标仓入口只负责监听 GitHub 事件、转发可信的编号/ref/SHA；真正的 Issue/PR 判断、资料检索、代码检出、修改、测试、提交、建 PR 和回复都由控制仓 full SHA 中的 Codex CLI 完成。
+本项目有两类 workflow：目标仓中的“入口/转发” workflow，以及控制仓中的“Codex 执行” reusable workflow。目标仓入口只负责监听 GitHub 事件、转发可信的编号/ref/SHA；真正的 Issue/PR 判断、资料检索、代码检出、修改、测试、提交、建 PR 和回复都由受保护控制仓 `main`（或临时指定的 full SHA）中的 Codex CLI 完成。
 
 ## 先看结论
 
@@ -39,7 +39,7 @@ CI 失败的自动入口是目标仓的 `.github/workflows/moviepilot-codex-ci.y
 
 ## 控制仓中的四个 reusable workflow
 
-这些文件不能作为目标仓的 GitHub 事件入口；它们由目标仓 workflow 通过固定的 40 位 `CONTROL_REF` 调用。
+这些文件不能作为目标仓的 GitHub 事件入口；它们由目标仓 workflow 通过控制仓 `main` 调用，必要时也支持 40 位 `CONTROL_REF` 临时冻结版本。
 
 | 控制仓文件 | 被谁调用 | 权限边界 | 主要职责 |
 | --- | --- | --- | --- |

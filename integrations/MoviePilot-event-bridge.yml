@@ -1,5 +1,5 @@
 # Copy to the target repository as .github/workflows/moviepilot-codex-events.yml.
-# Also copy MoviePilot-codex-run.yml. Replace CONTROL_REF in that run template.
+# Also copy MoviePilot-codex-run.yml; it follows the control repository main branch.
 # This intake workflow has no OpenAI or Telegram secret: it only forwards trusted
 # event metadata to a same-repository workflow_dispatch run.
 name: MoviePilot Codex event intake

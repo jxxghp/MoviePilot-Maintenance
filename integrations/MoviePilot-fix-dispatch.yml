@@ -1,6 +1,6 @@
 # Copy to the target repository as .github/workflows/moviepilot-codex-fix.yml.
 # This is the only normal entry point that grants Codex write permissions.
-# Replace CONTROL_REF with a full 40-character SHA of the trusted control commit.
+# The target follows the latest control contract from the protected control-repo main branch.
 name: MoviePilot Codex approved fix
 
 on:
@@ -24,10 +24,10 @@ permissions:
 jobs:
   codex:
     if: ${{ vars.CODEX_ENABLED == 'true' && vars.CODEX_AUTOFIX_ENABLED == 'true' }}
-    uses: jxxghp/MoviePilot-Maintenance/.github/workflows/codex-fix.yml@CONTROL_REF
+    uses: jxxghp/MoviePilot-Maintenance/.github/workflows/codex-fix.yml@main
     with:
       control_repository: jxxghp/MoviePilot-Maintenance
-      control_ref: CONTROL_REF
+      control_ref: main
       prompt_name: ${{ inputs.prompt_name }}
       codex_model: ${{ vars.CODEX_MODEL }}
       codex_effort: ${{ vars.CODEX_EFFORT || 'high' }}

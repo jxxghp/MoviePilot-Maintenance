@@ -82,6 +82,9 @@ jobs:
           for integration in integrations/MoviePilot-event-bridge.yml integrations/MoviePilot-Frontend-event-bridge.yml integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml integrations/MoviePilot-ci-bridge.yml integrations/MoviePilot-Frontend-ci-bridge.yml integrations/MoviePilot-fix-dispatch.yml; do
             test -s "$integration"
           done
+          for integration in integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml integrations/MoviePilot-fix-dispatch.yml; do
+            grep -q 'control_ref: main' "$integration"
+          done
           if rg -n 'actions/checkout' .github/workflows/codex-*.yml integrations/*.yml; then
             echo 'Target maintenance workflows must not checkout target code' >&2
             exit 1

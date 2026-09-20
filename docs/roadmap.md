@@ -39,4 +39,4 @@ Codex 读取 Issue/PR/diff/CI，自己判断问题、项目方向、PR 合并适
 
 ## 外部平台安装清单
 
-维护者需要在 GitHub 配置：控制仓权限、目标仓事件桥、Actions Secrets/Variables、`OPENAI_API_KEY`、控制仓读取 token、可选跨仓 `MAINTENANCE_TARGET_GH_TOKEN`、`CODEX_MODEL`/`CODEX_EFFORT`/完整 Responses API endpoint、`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`、分支保护和默认 full-SHA control ref。代码不会伪造这些平台状态。
+维护者需要在 GitHub 配置：控制仓权限、受保护的 `main` 控制分支、目标仓事件桥、Actions Secrets/Variables、`OPENAI_API_KEY`、控制仓读取 token、可选跨仓 `MAINTENANCE_TARGET_GH_TOKEN`、`CODEX_MODEL`/`CODEX_EFFORT`/完整 Responses API endpoint、`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` 和分支保护。代码不会伪造这些平台状态。

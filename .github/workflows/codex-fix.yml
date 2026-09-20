@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       control_ref:
-        description: Full commit SHA containing the trusted prompt and result schema.
+        description: Control repository ref; use main for the latest trusted contract or a full commit SHA for pinning.
         required: true
         type: string
       prompt_name:
@@ -104,8 +104,8 @@ jobs:
             echo "Invalid control repository" >&2
             exit 2
           fi
-          if [[ ! "$CONTROL_REF" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "control_ref must be a full commit SHA" >&2
+          if [[ "$CONTROL_REF" != "main" && ! "$CONTROL_REF" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "control_ref must be main or a full commit SHA" >&2
             exit 2
           fi
           case "$PROMPT_NAME" in
