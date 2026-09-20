@@ -176,10 +176,19 @@ jobs:
           RESPONSES_API_ENDPOINT: ${{ inputs.openai_base_url }}
         run: |
           set -euo pipefail
-          curl --silent --show-error --max-time 15 \
+          preflight_output="$(curl --silent --show-error --max-time 15 \
             --output /dev/null \
-            --write-out 'Responses endpoint preflight: remote=%{remote_ip} status=%{http_code}\n' \
-            "$RESPONSES_API_ENDPOINT"
+            --write-out '%{remote_ip} %{http_code}' \
+            "$RESPONSES_API_ENDPOINT")" || {
+            echo 'Responses endpoint preflight: remote=unknown status=000' >&2
+            exit 1
+          }
+          read -r remote_ip http_status <<< "$preflight_output"
+          printf 'Responses endpoint preflight: remote=%s status=%s\n' "$remote_ip" "$http_status"
+          if [[ "$http_status" == "000" || "$http_status" =~ ^5[0-9]{2}$ ]]; then
+            echo "Responses endpoint returned an unavailable status: $http_status" >&2
+            exit 1
+          fi
 
       - name: Run Codex CLI
         uses: openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af

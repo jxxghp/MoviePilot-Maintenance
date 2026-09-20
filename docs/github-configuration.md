@@ -73,7 +73,7 @@
 
 推荐的初始配置是：`CODEX_ENABLED=false`、`CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`、`TELEGRAM_ENABLED=false`。确认 `OPENAI_API_KEY` 和其它配置就绪后才把 `CODEX_ENABLED` 改为 `true`。这不会限制 Codex CLI 的本地执行权限，只控制是否启动任务以及是否拥有对应的 GitHub 写入能力和是否主动发送通知。
 
-如果配置了 `OPENAI_BASE_URL`，每次 Codex job 会先执行不携带 API key 的 HTTPS 连通性预检；预检失败时不会启动 Codex，也不会消耗模型请求。日志中的 `remote=... status=...` 用于确认 runner 实际访问的地址；`status=000` 表示尚未建立 HTTP 连接。若源站只有 IPv6，不能仅凭本机 `curl -6` 成功判断 GitHub-hosted runner 可达；应使用下面的 Cloudflare Tunnel 中转，或改用具备 IPv6 出口的 self-hosted runner。
+如果配置了 `OPENAI_BASE_URL`，每次 Codex job 会先执行不携带 API key 的 HTTPS 连通性预检；预检失败时不会启动 Codex，也不会消耗模型请求。日志中的 `remote=... status=...` 用于确认 runner 实际访问的地址；`status=000` 表示尚未建立 HTTP 连接，`5xx` 表示中转或源站不可用，工作流会直接停止。若源站只有 IPv6，不能仅凭本机 `curl -6` 成功判断 GitHub-hosted runner 可达；应使用下面的 Cloudflare Tunnel 中转，或改用具备 IPv6 出口的 self-hosted runner。
 
 ## 6. 用 Cloudflare Tunnel 中转 IPv6 源站（推荐）
 
@@ -98,6 +98,8 @@
    Tunnel token 只保存在 Mac 的服务配置中，不要提交到仓库、Issue、PR 或 GitHub Actions Variables。
 
 Cloudflare 会自动为 `codex-api.example.com` 创建指向 `<TUNNEL_ID>.cfargotunnel.com` 的 DNS 记录。保持代理状态为橙云；不要把这个记录改成 DNS only。Cloudflare 官方文档说明，使用 HTTPS 源站时应通过 `Origin Server Name` 保持证书校验，而不是关闭 TLS 校验。
+
+如果公共入口返回 `526`，说明请求已经到达 Cloudflare，但 Cloudflare 无法通过源站 TLS 证书校验。Tunnel 模式应检查 `Service URL=https://localhost:8443`、`Origin Server Name=mac.jxxghp.cn` 和关闭状态的 `Disable TLS verification`；直接橙云代理模式则需要让源站证书覆盖 `codex-api.example.com`，或改用 Cloudflare Origin CA 证书，并保持 SSL/TLS 为 `Full (strict)`。不要用 `Flexible` 规避证书错误。
 
 ### 6.2 验证并切换 Actions
 

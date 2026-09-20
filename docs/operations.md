@@ -39,7 +39,7 @@ gh api rate_limit
 
 不要设置 `OPENAI_API_KEY`/`CODEX_API_KEY` 为整个 job 环境变量；使用 Codex Action 的专用输入。公开仓库不使用 Codex 登录态文件。
 
-自定义 endpoint 必须从 GitHub-hosted runner 可达；当前 reusable workflow 会先用普通 HTTPS `curl` 做无密钥预检。若日志出现 `status=000`，应先检查 Cloudflare Tunnel/公网中转、TLS 和源站服务，再检查 API key。对只提供 IPv6 的本机源站，不能以本机 `curl -6` 成功代替 GitHub-hosted runner 的可达性验证。
+自定义 endpoint 必须从 GitHub-hosted runner 可达；当前 reusable workflow 会先用普通 HTTPS `curl` 做无密钥预检。若日志出现 `status=000`，应先检查 Cloudflare Tunnel/公网中转、TLS 和源站服务；若出现 `526` 等 `5xx`，应先修正 Cloudflare 到源站的证书/SNI，再检查 API key。对只提供 IPv6 的本机源站，不能以本机 `curl -6` 成功代替 GitHub-hosted runner 的可达性验证。
 
 ## 权限环境
 
