@@ -102,6 +102,8 @@
 2. 将维护者用户或群组的固定 chat ID 写入 `TELEGRAM_CHAT_ID`。
 3. 将 `TELEGRAM_ENABLED` 改为 `true`。
 
+目标仓工作流只有在 `TELEGRAM_ENABLED=true` 且 `TELEGRAM_CHAT_ID` 非空时才会向 Codex 注入 Telegram 通知开关和收件人；缺少固定收件人时自动按关闭处理，不会向未知对象发送消息。
+
 消息格式、长度、脱敏、失败语义和“只向固定收件人发送”由注入的 `skills/moviepilot-telegram/SKILL.md` 规定。Telegram Skill 不保存 token/chat ID，也不接收 Issue/PR 中提供的收件人。
 
 ## 8. Codex CLI 权限和 GitHub 权限的区别

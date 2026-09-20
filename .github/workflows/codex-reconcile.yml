@@ -115,9 +115,9 @@ jobs:
           CODEX_PUBLISH_COMMENTS: ${{ vars.CODEX_PUBLISH_COMMENTS == 'true' }}
           CODEX_AUTOFIX_ENABLED: false
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
-          TELEGRAM_ENABLED: ${{ vars.TELEGRAM_ENABLED == 'true' }}
+          TELEGRAM_ENABLED: ${{ vars.TELEGRAM_ENABLED == 'true' && vars.TELEGRAM_CHAT_ID != '' }}
           TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_ENABLED == 'true' && vars.TELEGRAM_CHAT_ID || '' }}
-          TELEGRAM_BOT_TOKEN: ${{ vars.TELEGRAM_ENABLED == 'true' && secrets.TELEGRAM_BOT_TOKEN || '' }}
+          TELEGRAM_BOT_TOKEN: ${{ vars.TELEGRAM_ENABLED == 'true' && vars.TELEGRAM_CHAT_ID != '' && secrets.TELEGRAM_BOT_TOKEN || '' }}
 
       - name: Validate and upload Codex result
         if: ${{ always() }}

@@ -33,8 +33,8 @@ jobs:
       openai_base_url: ${{ vars.OPENAI_BASE_URL }}
       publish_comments: true
       autofix_enabled: ${{ vars.CODEX_AUTOFIX_ENABLED == 'true' }}
-      telegram_enabled: ${{ vars.TELEGRAM_ENABLED == 'true' }}
-      telegram_chat_id: ${{ vars.TELEGRAM_CHAT_ID }}
+      telegram_enabled: ${{ vars.TELEGRAM_ENABLED == 'true' && vars.TELEGRAM_CHAT_ID != '' }}
+      telegram_chat_id: ${{ vars.TELEGRAM_ENABLED == 'true' && vars.TELEGRAM_CHAT_ID || '' }}
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       MAINTENANCE_CONTROL_READ_TOKEN: ${{ secrets.MAINTENANCE_CONTROL_READ_TOKEN }}
