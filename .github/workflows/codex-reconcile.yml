@@ -102,7 +102,7 @@ jobs:
           effort: ${{ vars.CODEX_EFFORT || 'medium' }}
           allow-bots: true
           codex-home: .codex-home
-          permission-profile: moviepilot-autonomous-net
+          permission-profile: ":danger-full-access"
           safety-strategy: drop-sudo
           codex-args: '["--ephemeral"]'
         env:

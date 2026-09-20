@@ -104,7 +104,7 @@
 
 ## 8. Codex CLI 权限和 GitHub 权限的区别
 
-Codex Action 使用控制仓 `config/codex.toml` 中的 `moviepilot-autonomous-net` profile：它基于官方 `:danger-full-access`，允许 Codex CLI 在 runner 上完整执行 clone、fetch、checkout、编辑、测试、commit、push、PR/comment 和公开资料检索，不产生交互式授权请求；`drop-sudo` 只禁止提升为 root。GitHub API 能做什么仍由当前 workflow 的 `permissions` 和 `GH_TOKEN` 决定，二者不是同一层权限。
+Codex Action 使用控制仓 `config/codex.toml` 中的官方内置 `:danger-full-access` profile，并设置 `approval_policy = "never"`。它允许 Codex CLI 在 runner 上完整执行 clone、fetch、checkout、编辑、测试、commit、push、PR/comment 和公开资料检索，不产生交互式授权请求；`drop-sudo` 只禁止提升为 root。GitHub API 能做什么仍由当前 workflow 的 `permissions` 和 `GH_TOKEN` 决定，二者不是同一层权限。
 
 因此：
 

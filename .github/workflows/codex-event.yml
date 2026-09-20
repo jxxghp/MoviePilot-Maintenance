@@ -194,7 +194,7 @@ jobs:
           effort: ${{ inputs.codex_effort }}
           allow-bots: true
           codex-home: .codex-home
-          permission-profile: moviepilot-autonomous-net
+          permission-profile: ":danger-full-access"
           safety-strategy: drop-sudo
           codex-args: '["--ephemeral"]'
         env:

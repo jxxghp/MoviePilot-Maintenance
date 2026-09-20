@@ -1,20 +1,7 @@
-# Trusted Codex CLI permission profiles used by the GitHub Action.
+# Trusted Codex CLI configuration used by the GitHub Action.
 # This file is fetched from the pinned control commit before Codex starts.
-
-default_permissions = "moviepilot-autonomous-net"
-
-[features]
-network_proxy = true
-
-[permissions.moviepilot-autonomous-net]
-description = "Run the trusted MoviePilot maintainer prompt without interactive permission requests."
-extends = ":danger-full-access"
-
-[permissions.moviepilot-autonomous-net.network]
-enabled = true
-
-[permissions.moviepilot-autonomous-net.network.domains]
-# Codex must research official documentation, upstream Issues, standards, and
-# public dependency information. The proxy keeps local/private targets blocked
-# by default; prompts must not upload secrets.
-"*" = "allow"
+#
+# Use the built-in profile directly. Codex does not allow a custom profile to
+# extend :danger-full-access, and this workflow is intentionally unattended.
+default_permissions = ":danger-full-access"
+approval_policy = "never"
