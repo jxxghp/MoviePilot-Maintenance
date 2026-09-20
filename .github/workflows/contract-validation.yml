@@ -96,6 +96,18 @@ jobs:
           for integration in integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml integrations/MoviePilot-fix-dispatch.yml; do
             grep -q 'control_ref: main' "$integration"
           done
+          for integration in integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml; do
+            ruby -ryaml -e '
+              path = ARGV.fetch(0)
+              workflow = YAML.load_file(path)
+              expected_read = {"contents" => "read", "issues" => "read", "pull-requests" => "read"}
+              raise "#{path}: top-level permissions must be read-only" unless workflow.fetch("permissions") == expected_read
+              raise "#{path}: shadow permissions must be read-only" unless workflow.fetch("jobs").fetch("shadow").fetch("permissions") == expected_read
+              propose = workflow.fetch("jobs").fetch("propose").fetch("permissions")
+              expected_propose = expected_read.merge("issues" => "write")
+              raise "#{path}: propose permissions must only add issue comments" unless propose == expected_propose
+            ' "$integration"
+          done
           if rg -n 'actions/checkout' .github/workflows/codex-*.yml integrations/*.yml; then
             echo 'Target maintenance workflows must not checkout target code' >&2
             exit 1
