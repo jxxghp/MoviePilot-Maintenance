@@ -68,8 +68,7 @@
         "string",
         "null"
       ],
-      "maxLength": 2048,
-      "format": "uri-reference"
+      "maxLength": 2048
     },
     "tests": {
       "type": "array",
