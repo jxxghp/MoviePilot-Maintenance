@@ -65,13 +65,15 @@
 | `CODEX_ENABLED` | `false` | 总开关；确认 API key、模型和权限已配置后才改为 `true` |
 | `CODEX_MODEL` | 账号支持的 Codex GPT 模型名 | 传给官方 Codex Action；留空则使用 Action/CLI 默认模型 |
 | `CODEX_EFFORT` | `medium` | Codex 推理强度；修复入口模板默认使用 `high` |
-| `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理配置完整 Responses API 地址，例如 `https://mac.jxxghp.cn:8443/v1/responses` |
+| `OPENAI_BASE_URL` | 空 | OpenAI 官方地址留空；兼容代理配置完整 Responses API 地址，例如 `https://mac.jxxghp.cn:8443/v1/responses`。GitHub-hosted runner 必须能通过公网 IPv6 访问该地址，并且域名应有可达的 AAAA 记录 |
 | `TELEGRAM_ENABLED` | `false` | 是否向 Codex 注入 Telegram 通知凭据 |
 | `TELEGRAM_CHAT_ID` | 空 | 固定维护者用户或群组 ID，不能由 Issue/PR/模型提供 |
 | `CODEX_PUBLISH_COMMENTS` | `false` | `false` 只上传结果 artifact；`true` 才允许 Codex 用 `gh issue comment` 回复 |
 | `CODEX_AUTOFIX_ENABLED` | `false` | 只有 fix dispatch 使用；为 `true` 时 Codex 才能在有写权限的入口创建分支、提交和 PR |
 
 推荐的初始配置是：`CODEX_ENABLED=false`、`CODEX_PUBLISH_COMMENTS=false`、`CODEX_AUTOFIX_ENABLED=false`、`TELEGRAM_ENABLED=false`。确认 `OPENAI_API_KEY` 和其它配置就绪后才把 `CODEX_ENABLED` 改为 `true`。这不会限制 Codex CLI 的本地执行权限，只控制是否启动任务以及是否拥有对应的 GitHub 写入能力和是否主动发送通知。
+
+如果配置了 `OPENAI_BASE_URL`，每次 Codex job 会先执行不携带 API key 的 IPv6 连通性预检；预检失败时不会启动 Codex，也不会消耗模型请求。日志中的 `remote=... status=...` 用于确认 runner 实际访问的地址；`status=000` 表示尚未建立 HTTP 连接。
 
 ## 6. 控制仓补漏 workflow 的配置
 
