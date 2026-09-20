@@ -16,4 +16,4 @@
 
 `gh` 授权使用 Actions 的 `GITHUB_TOKEN` 和 `gh auth setup-git`，不需要另做 GitHub Skill；只有控制仓定时跨仓补漏才使用单独的最小权限 GitHub App/PAT Secret。Telegram Skill 只约束消息，不保存任何凭据。
 
-部署与平台配置见 [`docs/operations.md`](docs/operations.md)，逐项配置清单见 [`docs/github-configuration.md`](docs/github-configuration.md)，凭据见 [`docs/credentials.md`](docs/credentials.md)，分阶段目标见 [`docs/roadmap.md`](docs/roadmap.md)。
+部署与平台配置见 [`docs/operations.md`](docs/operations.md)，workflow 角色和自动触发链见 [`docs/workflows.md`](docs/workflows.md)，逐项配置清单见 [`docs/github-configuration.md`](docs/github-configuration.md)，凭据见 [`docs/credentials.md`](docs/credentials.md)，分阶段目标见 [`docs/roadmap.md`](docs/roadmap.md)。

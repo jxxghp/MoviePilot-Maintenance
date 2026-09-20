@@ -2,6 +2,8 @@
 
 这份文档是部署时的逐项清单。项目不需要本地常驻服务、数据库或本地 Agent；需要一个控制仓，以及在 `MoviePilot`、`MoviePilot-Frontend` 两个目标仓安装工作流模板。
 
+四个模板不是同一类入口：Issue/PR 的自动入口是 `moviepilot-codex-events.yml`，CI 失败的自动入口是 `moviepilot-codex-ci.yml`，`moviepilot-codex-run.yml` 负责二段式分发，`moviepilot-codex-fix.yml` 只在维护者手工 dispatch 且两个开关都打开时获得写权限。完整链路和权限表见 [`workflows.md`](workflows.md)。
+
 ## 1. 创建控制仓并取得 full SHA
 
 1. 使用公开仓 `jxxghp/MoviePilot-Maintenance`，把本项目内容推到默认分支。

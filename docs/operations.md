@@ -4,6 +4,8 @@
 
 生产只需要 GitHub-hosted runner 和两个目标仓/控制仓的 Actions 配置，不需要本地常驻服务或数据库。每次 workflow 都在临时 runner 中启动一个 Codex CLI 任务；任务结束后 runner 丢弃。
 
+四个目标仓 workflow 的职责、自动触发入口和控制仓 reusable workflow 的权限边界见 [`workflows.md`](workflows.md)。Issue/PR 自动监听入口是 `moviepilot-codex-events.yml`，CI 失败自动监听入口是 `moviepilot-codex-ci.yml`；`moviepilot-codex-run.yml` 是二段式分发器，`moviepilot-codex-fix.yml` 只接受手工修复 dispatch。
+
 ## Workflow 启动前的环境准备
 
 普通 Actions 步骤只做以下准备，不检出目标代码、不编辑目标文件；目标仓库的实际 clone、fetch、checkout 和 GitHub 操作由 Codex CLI 自己完成：
