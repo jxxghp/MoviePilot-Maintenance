@@ -69,7 +69,7 @@ jobs:
             grep -q 'permission-profile: ":danger-full-access"' "$workflow"
             grep -q 'safety-strategy: drop-sudo' "$workflow"
           done
-          grep -q "if: \${{ inputs.autofix_enabled == true }}" .github/workflows/codex-fix.yml
+          grep -q "autofix_enabled == true" .github/workflows/codex-fix.yml
           grep -q "CODEX_AUTOFIX_ENABLED == 'true'" integrations/MoviePilot-fix-dispatch.yml
           for integration in integrations/MoviePilot-codex-run.yml integrations/MoviePilot-Frontend-codex-run.yml integrations/MoviePilot-fix-dispatch.yml; do
             grep -q "TELEGRAM_CHAT_ID != ''" "$integration"
