@@ -115,6 +115,7 @@ jobs:
 
       - name: Run Codex CLI
         uses: openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af
+        timeout-minutes: 50
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           responses-api-endpoint: ${{ vars.OPENAI_BASE_URL }}

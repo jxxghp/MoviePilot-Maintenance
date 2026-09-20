@@ -72,6 +72,10 @@ jobs:
             grep -q 'permission-profile: ":danger-full-access"' "$workflow"
             grep -q 'safety-strategy: drop-sudo' "$workflow"
           done
+          grep -q 'timeout-minutes: 50' .github/workflows/codex-event.yml
+          grep -q 'timeout-minutes: 50' .github/workflows/codex-propose.yml
+          grep -q 'timeout-minutes: 110' .github/workflows/codex-fix.yml
+          grep -q 'timeout-minutes: 50' .github/workflows/codex-reconcile.yml
           grep -q "autofix_enabled == true" .github/workflows/codex-fix.yml
           grep -q "CODEX_AUTOFIX_ENABLED == 'true'" integrations/MoviePilot-fix-dispatch.yml
           for workflow in .github/workflows/codex-event.yml .github/workflows/codex-propose.yml .github/workflows/codex-fix.yml; do

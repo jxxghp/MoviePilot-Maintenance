@@ -49,6 +49,8 @@ gh api rate_limit
 
 通过 GitHub Actions `concurrency` 按仓库和目标 Issue/PR/SHA 合并重复触发；新事件会取消同一目标的旧运行，避免同一个 CI 提交并行消耗模型额度或重复写入。它不是业务判断器；最新 head/base/Issue 内容由 Codex 每次重新读取。`codex-event.yml`、`codex-propose.yml` 和 `codex-fix.yml` 都不包含 Issue/PR 业务逻辑，区别只在平台权限、permission profile 和提示词入口。手工 fix 还会把 Issue/PR 编号、ref 和 SHA 显式传入 reusable workflow，Codex 不需要猜测目标。
 
+每个官方 Codex Action 步骤还配置了独立的步骤级超时：分析/补漏为 50 分钟，修复为 110 分钟，低于 Job 总超时并为 `always()` artifact 收集留下时间。超时只终止 Codex CLI，不由 Actions 猜测结论或补做提交；最终输出和日志按 workflow 的 artifact 规则保留，维护者可据此人工重跑。
+
 ## 事件与安全
 
 目标仓安装 `integrations/MoviePilot-event-bridge.yml`、对应的 `*-codex-run.yml`，以及按需安装 CI/fix 模板：Issue/PR 事件和 CI 完成的第一段 workflow 不接触 OpenAI/Telegram Secret，只用 `GITHUB_TOKEN` 将编号、ref、SHA 转成同仓 `workflow_dispatch`；第二段才调用控制仓 reusable workflow。这样官方 Codex Action 由 `github-actions[bot]` 触发并通过 `allow-bots` 门禁，普通 Issue/PR 作者不会直接消耗 API key。事件桥只使用默认分支 workflow，不 checkout PR 内容。Codex CLI 再自行 clone 目标仓。
