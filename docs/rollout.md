@@ -6,4 +6,4 @@
 4. 开启 `CODEX_PUBLISH_COMMENTS=true` 后，事件桥才调用有 Issue comment 权限的 `codex-propose.yml`；由 Codex 自己通过 `gh issue comment` 回复，运行中不等待人工批准。
 5. 配置 fix dispatch 所需的写权限和 `CODEX_AUTOFIX_ENABLED=true`；Codex 自己 clone、修复、测试、commit、push 和建 PR，运行中不等待人工批准。
 6. 修复试点稳定后，再由维护者决定是否允许更多类别；永远不让 Codex 直接推 `v3` 或自动 merge，除非新增明确授权和平台保护。
-7. 前端发布、后端发布、数据库/安全/依赖/公共契约/架构文件仍然由控制仓 prompt、Actions Variables 和分支保护预先设定边界；Codex 运行中不等待人工门禁。
+7. 前端发布、后端发布、持久化数据结构、安全、依赖、公共契约和架构文件仍然由控制仓 prompt、Actions Variables 和分支保护预先设定边界；Codex 运行中不等待人工门禁。控制仓本身不引入数据库或常驻状态服务。
