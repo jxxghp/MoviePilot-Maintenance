@@ -11,8 +11,8 @@
 普通 Actions 步骤只做以下准备，不检出目标代码、不编辑目标文件；目标仓库的实际 clone、fetch、checkout 和 GitHub 操作由 Codex CLI 自己完成：
 
 ```bash
-git config --global user.name "moviepilot-codex[bot]"
-git config --global user.email "moviepilot-codex[bot]@users.noreply.github.com"
+git config --global user.name "jxxghp"
+git config --global user.email "jxxghp@gmail.com"
 gh auth setup-git
 gh auth status
 gh api rate_limit

@@ -164,8 +164,8 @@ jobs:
           test -s "$GITHUB_WORKSPACE/.codex-home/config.toml"
           test -s "$GITHUB_WORKSPACE/.agents/skills/moviepilot-telegram/SKILL.md"
 
-          git config --global user.name 'moviepilot-codex[bot]'
-          git config --global user.email 'moviepilot-codex[bot]@users.noreply.github.com'
+          git config --global user.name 'jxxghp'
+          git config --global user.email 'jxxghp@gmail.com'
           GH_TOKEN="$TARGET_GH_TOKEN" gh auth setup-git
           GH_TOKEN="$TARGET_GH_TOKEN" gh auth status --hostname github.com
           GH_TOKEN="$TARGET_GH_TOKEN" gh api rate_limit --jq '.resources.core.remaining' >/dev/null
